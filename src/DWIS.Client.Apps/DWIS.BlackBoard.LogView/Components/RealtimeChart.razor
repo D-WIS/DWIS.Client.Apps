@@ -1,0 +1,246 @@
+﻿@inject DWIS.Client.ReferenceImplementation.IOPCUADWISClient? DWISClient;
+@using DWIS.Vocabulary.Schemas
+@using DWIS.SPARQL.Utils
+@using System.Collections.ObjectModel
+
+<PlotlyChart Id="@ChartTitle" @bind-Config="config" @bind-Layout="_layout" @bind-Data="_series" @ref="_chart" style="width:100%; height:100%" />
+
+@code {
+
+    [Parameter]
+    public ChartData[] ChartDatas { get; set; }
+
+    [Parameter]
+    public AxisData[] AxisDatas { get; set; }
+
+    [Parameter]
+    public string ChartTitle { get; set; }
+
+    [Parameter]
+    public bool ShowTimeAxis { get; set; }
+
+    PlotlyChart _chart;
+    Config config = new Config() { AutoSizable = true, Responsive = true, ShowSendToCloud = false, ShowEditInChartStudio = false };
+    Plotly.Blazor.Layout _layout = new Plotly.Blazor.Layout();
+    IList<ITrace> _series = new List<ITrace>();
+
+    private object _sync = new object();
+    private string[] Types = [Nouns.Measurement];
+
+    private System.Collections.Concurrent.ConcurrentDictionary<string, int> _data = new();
+    private System.Collections.Concurrent.ConcurrentDictionary<string, ChartData> _signalChartDataMapping = new();
+    private Dictionary<string, string> _axisLookUp = new();
+    private Dictionary<string, string> _legendLookUp = new();
+    private DWIS.Client.ReferenceImplementation.AcquiredSignals? _signals;
+
+    protected override Task OnInitializedAsync()
+    {
+        return base.OnInitializedAsync();
+    }
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _ = Task.Run(Loop);
+        }
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
+    protected override Task OnParametersSetAsync()
+    {
+        if (DWISClient != null && ChartDatas != null)
+        {
+            List<string> queries = new();
+            List<string> names = new();
+            List<double> conversionFactors = new();
+            foreach (var chartData in ChartDatas)
+            {
+                var q = Types.Select(t => new QueryBuilder().SelectSignal().AddMeasuredClass(chartData.Prototype).Build());
+                var n = Types.Select(t => t + "--" + chartData.Prototype);
+                var c = Types.Select(t => chartData.ConversionFactor);
+                queries.AddRange(q);
+                names.AddRange(n);
+                conversionFactors.AddRange(c);
+            }
+
+            _signals = DWIS.Client.ReferenceImplementation.AcquiredSignals.CreateWithSubscription(queries.ToArray(), names.ToArray(), 0, DWISClient);
+            foreach (var ac in _signals)
+            {
+                string key = ac.Key;
+                var cData = GetChartDataFromKey(key);
+
+                if (cData != null)
+                {
+                    _signalChartDataMapping.TryAdd(key, cData);
+                    foreach (var signal in ac.Value)
+                    {
+                        signal.FromSIMultiplicativeFactor =1.0/ cData.ConversionFactor;
+                    }
+                }
+            }
+        }
+
+
+
+        _layout.Legend = new List<Plotly.Blazor.LayoutLib.Legend>();
+
+        _layout.AutoSize = true;
+
+        _layout.Margin = new Plotly.Blazor.LayoutLib.Margin();
+        _layout.Margin.AutoExpand = true;
+        if (!ShowTimeAxis)
+        {
+            _layout.Margin.L = 0;
+        }
+        _layout.Margin.R = 0;
+        _layout.Margin.B = 0;
+
+        _layout.Shapes = new List<Plotly.Blazor.LayoutLib.Shape>();
+        _layout.Shapes.Add(new Plotly.Blazor.LayoutLib.Shape() { Type = Plotly.Blazor.LayoutLib.ShapeLib.TypeEnum.Rect, X0 = 0, X1 = 1, Y0= 0, Y1 = 1, XRef = "paper", YRef = "paper", Line = new Plotly.Blazor.LayoutLib.ShapeLib.Line() { Width = 1, Color = "black" } });
+
+        // _layout.Title = new() { Text = ChartTitle };
+        _layout.YAxis = [new Plotly.Blazor.LayoutLib.YAxis()
+            {
+                             Type = Plotly.Blazor.LayoutLib.YAxisLib.TypeEnum.Date,
+                             AutoRange = Plotly.Blazor.LayoutLib.YAxisLib.AutoRangeEnum.Reversed,
+                             Visible = ShowTimeAxis
+            }];
+
+        if (AxisDatas != null && AxisDatas.Length > 0)
+        {
+            _layout.XAxis = new List<Plotly.Blazor.LayoutLib.XAxis>();
+            foreach (var ad in AxisDatas)
+            {
+                _layout.Legend.Add(new Plotly.Blazor.LayoutLib.Legend()
+                { 
+                    Y = (decimal)1.1,
+                 Title = new Plotly.Blazor.LayoutLib.LegendLib.Title() { Text = ad.Name },
+                  XRef = Plotly.Blazor.LayoutLib.LegendLib.XRefEnum.Paper,
+                  Visible = false 
+                });
+                var axis = new Plotly.Blazor.LayoutLib.XAxis()
+                    {
+                        Title = new Plotly.Blazor.LayoutLib.XAxisLib.Title() 
+                        {
+                            Text = ad.Label,
+                         Font = new Plotly.Blazor.LayoutLib.XAxisLib.TitleLib.Font() { Color = "red",Weight = 800 }
+                        },
+                        Visible = true,
+                        Side = Plotly.Blazor.LayoutLib.XAxisLib.SideEnum.Top,
+                    TickFormat = ".2f",
+                    NTicks=5,
+                    ShowLine = true,                  
+                    //  Overlaying = "x", 
+                    };
+
+
+                if (_layout.XAxis.Count > 0)
+                {
+                    string overLay = "x" + (_layout.XAxis.Count > 1 ? (_layout.XAxis.Count - 1).ToString() : "");
+                    axis.Overlaying = overLay;
+                    axis.Anchor = "free";
+                    axis.Position =  (decimal)(1- 0.15 * _layout.XAxis.Count);
+                }
+                else { axis.Anchor = "y"; }
+
+                _layout.XAxis.Add(axis);
+
+                _legendLookUp.Add(ad.Name, "legend" + (_layout.Legend.Count > 1 ? (_layout.XAxis.Count).ToString() : ""));
+                _axisLookUp.Add(ad.Name, "x" +( _layout.XAxis.Count>1 ?  (_layout.XAxis.Count).ToString() : ""));
+            }
+        }
+
+        return base.OnParametersSetAsync();
+    }
+
+    private ChartData? GetChartDataFromKey(string key)
+    {
+        if (key.Contains("--"))
+        {
+            var elems = key.Split("--", StringSplitOptions.RemoveEmptyEntries);
+            if (elems != null && elems.Length == 2)
+            {
+                var prototype = elems[1];
+                return ChartDatas.FirstOrDefault(cd => cd.Prototype == prototype);
+            }
+        }
+        return null;
+    }
+
+
+    private async void Loop()
+    {
+        PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+        while (await timer.WaitForNextTickAsync())
+        {
+            bool traceAdded = false;
+            List<int> indexes = new();
+            DateTime now = DateTime.UtcNow;
+            List<List<object>> Xs = new();
+            List<List<object>> Ys = new();
+
+            if (_signals != null)
+            {
+                foreach (var key in _signals.Keys)
+                {
+                    var signalList = _signals[key];
+                    foreach (var signal in signalList)
+                    {
+                        double val = signal.GetValue<double>();
+                        if (!double.IsNaN(val))
+                        {
+                            var nodeid = signal.AcquisitionCriteriaResultItem;
+
+                            string text = "ns=" + nodeid.NameSpaceIndex.ToString() + ", s=" + nodeid.ID;
+
+                            int traceIdx = _data.ContainsKey(text) ? _data[text] : -1;
+                            if (traceIdx == -1)                            
+                            {
+                                ChartData? chartData = GetChartDataFromKey(key);
+                                if (chartData != null)
+                                {
+                                    traceAdded = true;
+                                    ITrace trace = new Scatter()
+                                        {Legend = _legendLookUp[chartData.AxisName],
+                                            Name = text, 
+                                            X = new List<object>(),
+                                            Y = new List<object>(),
+                                            Mode = Plotly.Blazor.Traces.ScatterLib.ModeFlag.Lines,
+                                            XAxis = _axisLookUp[chartData.AxisName],
+
+                                        };
+                                    _series.Add(trace);
+                                    traceIdx = _series.Count - 1;
+                                    _data.TryAdd(text, traceIdx);
+                                }
+                            }
+
+                            Xs.Add([now]);
+                            Ys.Add([val]);// * signal.FromSIMultiplicativeFactor]);
+                            indexes.Add(traceIdx);
+                        }
+                    }
+                }
+            }
+
+            try
+            {
+                if (_chart != null)
+                {
+                    int maxItems = 10000;
+
+                    if (Xs.Count() > 0)
+                    {
+                        await InvokeAsync(() => _chart.React());
+                        await InvokeAsync(() => _chart.ExtendTraces(Ys, Xs, indexes, maxItems));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+        }
+    }
+}

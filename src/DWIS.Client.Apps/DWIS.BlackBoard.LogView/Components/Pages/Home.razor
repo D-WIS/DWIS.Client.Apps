@@ -1,0 +1,99 @@
+﻿@page "/"
+@using DWIS.Vocabulary.Schemas
+<PageTitle>DWIS Blackboard drilling logs</PageTitle>
+
+<div style="width:100%; height:100vh; display:flex" >
+    @foreach (var item in _logsConfiguration)
+    {
+        <div style="width:@(_percent)%">
+
+            <RealtimeChart AxisDatas="@item.axisDatas" ChartDatas="@item.chardDatas" ChartTitle="@item.title" ShowTimeAxis="@item.showTime" ></RealtimeChart>
+    </div>    
+    }
+</div>
+
+
+@* <MudGrid>
+    @foreach (var prototype in _prototypes)
+    {
+        <MudItem xs="@_xs">
+            <RealtimeChart Prototype="@prototype.prototype" ConversionFactor="@prototype.conversion"></RealtimeChart>
+        </MudItem>
+    }
+</MudGrid> *@
+
+@code
+{
+    private (ChartData[] chardDatas, AxisData[] axisDatas, string title, bool showTime)[] _logsConfiguration = 
+    [
+        (
+            [
+                new ChartData() { AxisName = "depths", ConversionFactor = 1, Prototype = Nouns.BitDepth },
+                new ChartData() { AxisName = "depths", ConversionFactor = 1, Prototype = Nouns.HoleDepth },
+                new ChartData() { AxisName = "positions", ConversionFactor = 1, Prototype = Nouns.HookPosition }
+            ],
+            [
+                new AxisData() { Label = "Depth (m)" , Name = "depths" },
+                new AxisData() { Label = "Position (m)" , Name = "positions" }
+            ],
+            "Depths",
+            true
+        ),
+        (
+            [
+                new ChartData() { AxisName = "velocity", ConversionFactor = 1, Prototype = Nouns.HookVelocity },
+                new ChartData() { AxisName = "hookload", ConversionFactor = 1.0 / (9.81 * 1000), Prototype = Nouns.HookLoad },
+                new ChartData() { AxisName = "wob", ConversionFactor = 1.0 / (9.81 * 1000), Prototype = Nouns.WOB }
+            ],
+            [
+                new AxisData() { Label = "Velocity (m/s)" , Name = "velocity" },
+                new AxisData() { Label = "Hookload (t)" , Name = "hookload" },
+                new AxisData() { Label = "WOB (t)" , Name = "wob" }
+            ],
+            "Hoist",
+            false
+        ),
+        (
+            [
+                new ChartData() { AxisName = "flowrate", ConversionFactor = 60000, Prototype = Nouns.FlowRateIn },
+                new ChartData() { AxisName = "pressure", ConversionFactor = 1.0 / (1e5), Prototype = Nouns.SPP }
+            ],
+            [
+                new AxisData() { Label = "Flowrate in (l/min)" , Name = "flowrate" },
+                new AxisData() { Label = "Pressure (bar)" , Name = "pressure" }
+            ],
+            "Circulate",
+            false
+        ),
+        (
+            [
+                new ChartData() { AxisName = "rpm", ConversionFactor = 60 / (2 * System.Math.PI), Prototype = Nouns.SurfaceRPM },
+                new ChartData() { AxisName = "torque", ConversionFactor = 1.0 / (1e3), Prototype = Nouns.SurfaceTorque }
+            ],
+            [
+                new AxisData() { Label = "Surface RPM (rpm)" , Name = "rpm" },
+                new AxisData() { Label = "Torque (mkN)" , Name = "torque" }
+            ],
+            "Rotate",
+            false
+        ),
+    
+    ];
+
+
+
+
+
+    private int _percent = 10;
+    private (string prototype, string label, string unitLabel, double conversion, bool showTime)[] _prototypes = [
+        (Nouns.HookPosition, "Block position", "m", 1.0, true), 
+        (Nouns.HookVelocity, "Block velocity", "m/s", 1.0, false),
+        (Nouns.HookLoad, "Hookload", "t", 1.0 /(1000 * 9.81), false)];
+
+
+    protected override Task OnInitializedAsync()
+    {
+        _percent = 100 / _prototypes.Length;
+        return base.OnInitializedAsync();
+    }
+}

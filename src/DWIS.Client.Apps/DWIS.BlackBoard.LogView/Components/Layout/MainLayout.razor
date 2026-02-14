@@ -1,0 +1,28 @@
+﻿@inherits LayoutComponentBase
+@* Required *@
+<MudThemeProvider />
+<MudPopoverProvider />
+
+@* Needed for dialogs *@
+<MudDialogProvider />
+
+@* Needed for snackbars *@
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Fixed="true" >
+        Drilling Logs
+    </MudAppBar>
+
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+@code{
+    protected override Task OnInitializedAsync()
+    {
+        base.OnInitializedAsync();
+        return base.OnInitializedAsync();
+    }
+}
