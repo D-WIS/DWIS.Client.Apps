@@ -32,7 +32,7 @@ jobs:
       - name: Build and push server
         uses: docker/build-push-action@v6
         with:
-          context: main/src/DWIS.Docker
+          context:  main/src/DWIS.Client.Apps
           file: main/src/DWIS.Client.Apps/DWIS.BlackBoard.LogView/Dockerfile
           tags: digiwells/dwis-logview:stable
           push: true
