@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject AppControl Control
 @* Required *@
 <MudThemeProvider />
 <MudPopoverProvider />
@@ -9,12 +10,43 @@
 @* Needed for snackbars *@
 <MudSnackbarProvider />
 
-<MudLayout>
-    <MudAppBar Fixed="true" >
-        Drilling Logs
+<MudLayout >
+
+    <MudAppBar Fixed="true" Style="background-color:white; color:black; " >
+        <MudImage Src="img/NORCE_Logo_Skjerm_Blaa.png" Height="30" Style="margin-top:5px"></MudImage>
+
+        <MudSpacer />
+        
+        <MudButton IconColor="Color.Primary" StartIcon="@(Control.Play ? Icons.Material.Filled.PauseCircle : Icons.Material.Filled.PlayCircle)" OnClick="()=>Control.Play = !Control.Play"/>
+        
+        <MudSpacer/>
+        
+        <MudText Typo="@Typo.h4">
+            Drilling Logs
+        </MudText>
+
+        <MudSpacer />
+
+        <MudRadioGroup @bind-Value="Control.DisplaySpan">
+            <MudRadio Value="@(TimeSpan.FromMinutes(1))">1 min.</MudRadio>
+            <MudRadio Value="@(TimeSpan.FromMinutes(5))">5 min.</MudRadio>
+            <MudRadio Value="@(TimeSpan.FromMinutes(10))">10 min.</MudRadio>
+            <MudRadio Value="@(TimeSpan.FromMinutes(30))">30 min.</MudRadio>
+            <MudRadio Value="@(TimeSpan.FromMinutes(60))">1 h.</MudRadio>
+            <MudRadio Value="@(TimeSpan.FromMinutes(180))">3 h.</MudRadio>
+             <MudRadio Value="@(TimeSpan.FromMinutes(600))">10 h.</MudRadio>
+            <MudRadio Value="@(TimeSpan.MaxValue)">All</MudRadio>
+        </MudRadioGroup>
+
+        <MudSpacer />
+
+        <MudLink Href="https://github.com/D-WIS/DWIS.Client.Apps">Source</MudLink>
+
+@*         <MudButton StartIcon="@(Control.FullScreen? Icons.Material.Filled.FullscreenExit : Icons.Material.Filled.Fullscreen)" OnClick="async () => {Control.FullScreen = !Control.FullScreen;await InvokeAsync(StateHasChanged);}" /> *@
+
     </MudAppBar>
 
-    <MudMainContent>
+    <MudMainContent Style="height:100vh">
         @Body
     </MudMainContent>
 </MudLayout>
@@ -24,5 +56,17 @@
     {
         base.OnInitializedAsync();
         return base.OnInitializedAsync();
+    }
+
+    private string GetStyle()
+    {
+        if (Control.FullScreen)
+        {
+            return "width: 100 %; height: 100vh;";
+        }
+        else
+        {
+            return "width: 100 %; height: 100%;";
+        }
     }
 }

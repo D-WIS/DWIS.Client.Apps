@@ -1,4 +1,5 @@
-﻿@inject DWIS.Client.ReferenceImplementation.IOPCUADWISClient? DWISClient;
+﻿@inject DWIS.Client.ReferenceImplementation.IOPCUADWISClient? DWISClient
+@inject AppControl Control
 @using DWIS.Vocabulary.Schemas
 @using DWIS.SPARQL.Utils
 @using System.Collections.ObjectModel
@@ -94,7 +95,7 @@
             _layout.Margin.L = 0;
         }
         _layout.Margin.R = 0;
-        _layout.Margin.B = 0;
+        _layout.Margin.B = 4;
 
         _layout.Shapes = new List<Plotly.Blazor.LayoutLib.Shape>();
         _layout.Shapes.Add(new Plotly.Blazor.LayoutLib.Shape() { Type = Plotly.Blazor.LayoutLib.ShapeLib.TypeEnum.Rect, X0 = 0, X1 = 1, Y0= 0, Y1 = 1, XRef = "paper", YRef = "paper", Line = new Plotly.Blazor.LayoutLib.ShapeLib.Line() { Width = 1, Color = "black" } });
@@ -226,12 +227,47 @@
 
             try
             {
-                if (_chart != null)
+                if (Control.Play && _chart != null)
                 {
                     int maxItems = 10000;
 
                     if (Xs.Count() > 0)
                     {
+                        if (Control.DisplaySpan != TimeSpan.MaxValue)
+                        {
+                            bool shouldUpdate = _layout.YAxis.First().Range == null;
+
+                            if (!shouldUpdate)
+                            {
+                                var range = _layout.YAxis.First().Range;
+                                if (range != null && range.Count == 2)
+                                {
+                                    DateTime start = (DateTime)range[0];
+                                    DateTime end = (DateTime)range[1];
+                                    if (now > end || now < start)
+                                    {
+                                        shouldUpdate = true;
+                                    }
+                                }
+                            }
+
+
+                            if (shouldUpdate) 
+                            {
+                                 //_layout.YAxis.First().AutoRange = Plotly.Blazor.LayoutLib.YAxisLib.AutoRangeEnum.
+                                _layout.YAxis.First().Range = new List<object>() { now, now.AddMinutes(-Control.DisplaySpan.TotalMinutes) };
+                                await InvokeAsync(() => _chart.Relayout());
+                            }
+                        }
+                        else
+                        {
+                            if (_layout.YAxis.First().Range != null)
+                            {
+                                _layout.YAxis.First().Range = null;
+                                _layout.YAxis.First().AutoRange = Plotly.Blazor.LayoutLib.YAxisLib.AutoRangeEnum.Reversed;
+                                await InvokeAsync(() => _chart.Relayout());    
+                            }
+                        }
                         await InvokeAsync(() => _chart.React());
                         await InvokeAsync(() => _chart.ExtendTraces(Ys, Xs, indexes, maxItems));
                     }

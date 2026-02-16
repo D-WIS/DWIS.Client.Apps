@@ -1,3 +1,4 @@
+using DWIS.BlackBoard.LogView;
 using DWIS.BlackBoard.LogView.Components;
 using DWIS.Client.ReferenceImplementation;
 using MudBlazor.Services;
@@ -11,7 +12,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddMudServices();
 builder.Services.AddSingleton<IOPCUADWISClient, DWIS.Client.ReferenceImplementation.OPCFoundation.DWISClientOPCF>();
 builder.Services.AddSingleton<IDWISClientConfiguration>(new DefaultDWISClientConfiguration());
-
+builder.Services.AddSingleton<AppControl>(new AppControl());
 
 
 var app = builder.Build();

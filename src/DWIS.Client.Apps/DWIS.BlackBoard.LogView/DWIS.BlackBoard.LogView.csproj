@@ -20,6 +20,18 @@
     <Content Update="C:\Users\beda\.nuget\packages\dwis.client.referenceimplementation.opcfoundation\2.2.43\contentFiles\any\net8.0\config\Quickstarts.ReferenceClient.Config.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Update="wwwroot\img\digiwells-no-background-120px.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\img\DWIS-Industry-Group-Logo-5-31-21.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\img\NORCE_Logo_Skjerm_Blaa.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\img\NORCE_Logo_Trykk_Blaa.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
