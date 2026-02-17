@@ -17,7 +17,7 @@
 
         <MudSpacer />
         
-        <MudButton IconColor="Color.Primary" StartIcon="@(Control.Play ? Icons.Material.Filled.PauseCircle : Icons.Material.Filled.PlayCircle)" OnClick="()=>Control.Play = !Control.Play"/>
+        <MudButton IconColor="@(Control.Play ? Color.Error : Color.Success)" StartIcon="@(Control.Play ? Icons.Material.Filled.PauseCircle : Icons.Material.Filled.PlayCircle)" OnClick="()=>Control.Play = !Control.Play"/>
         
         <MudSpacer/>
         

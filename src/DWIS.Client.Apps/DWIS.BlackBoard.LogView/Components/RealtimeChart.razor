@@ -254,9 +254,10 @@
 
                             if (shouldUpdate) 
                             {
-                                 //_layout.YAxis.First().AutoRange = Plotly.Blazor.LayoutLib.YAxisLib.AutoRangeEnum.
+                                _layout.YAxis.First().AutoRange = null;
+                                //_layout.YAxis.First().AutoRange = Plotly.Blazor.LayoutLib.YAxisLib.AutoRangeEnum.
                                 _layout.YAxis.First().Range = new List<object>() { now, now.AddMinutes(-Control.DisplaySpan.TotalMinutes) };
-                                await InvokeAsync(() => _chart.Relayout());
+                               // await InvokeAsync(() => _chart.Relayout());
                             }
                         }
                         else
