@@ -1,5 +1,13 @@
 ﻿@page "/"
 @using DWIS.Vocabulary.Schemas
+@inject DWIS.Client.ReferenceImplementation.IOPCUADWISClient? DWISClient
+@inject AppControl Control
+@using DWIS.Vocabulary.Schemas
+@using DWIS.SPARQL.Utils
+@using DWIS.API.DTO
+@using DWIS.HSM.Scheduler.Base
+@using DWIS.HSM.Scheduler.Base.HSM
+
 <PageTitle>DWIS Blackboard drilling logs</PageTitle>
 
 <div style="width:100%; height:100%; display:flex" >
@@ -7,7 +15,7 @@
     {
         <div style="width:@(_percent)%">
 
-            <RealtimeChart AxisDatas="@item.axisDatas" ChartDatas="@item.chardDatas" ChartTitle="@item.title" ShowTimeAxis="@item.showTime" ></RealtimeChart>
+            <RealtimeChart AxisDatas="@item.axisDatas" ChartDatas="@item.chardDatas" ChartTitle="@item.title" ShowTimeAxis="@item.showTime"/>
     </div>    
     }
 </div>
@@ -28,17 +36,17 @@
     [
         (
             [
-                new ChartData() { AxisName = "depths", ConversionFactor = 1, Prototype = Nouns.BitDepth },
+    new ChartData() { AxisName = "depths", ConversionFactor = 1, Prototype = Nouns.BitDepth },
                 new ChartData() { AxisName = "depths", ConversionFactor = 1, Prototype = Nouns.HoleDepth },
                 new ChartData() { AxisName = "positions", ConversionFactor = 1, Prototype = Nouns.HookPosition }
-            ],
+    ],
             [
-                new AxisData() { Label = "Depth (m)" , Name = "depths" },
+    new AxisData() { Label = "Depth (m)" , Name = "depths" },
                 new AxisData() { Label = "Position (m)" , Name = "positions" }
-            ],
-            "Depths",
-            true
-        ),
+    ],
+    "Depths",
+    true
+    ),
         (
             [
                 new ChartData() { AxisName = "velocity", ConversionFactor = 1, Prototype = Nouns.HookVelocity },
@@ -77,11 +85,14 @@
             "Rotate",
             false
         ),
-    
+
     ];
 
 
-
+    private bool displaySemanticIdentified = false;
+    private List<string> _currentJobs = new List<string>();
+    private List<object> _schedulerDates = new();
+    private List<object> _schedulerStatus = new();
 
 
     private int _percent = 10;
@@ -93,7 +104,97 @@
 
     protected override Task OnInitializedAsync()
     {
-        _percent = 100 / _prototypes.Length;
+        _percent = 100 / _logsConfiguration.Length;
+       // SchedulingStatusSetUp(); deactivate the feature for the time being
         return base.OnInitializedAsync();
+    }
+
+    private void SchedulingStatusSetUp()
+    {
+        if (DWISClient != null)
+        {
+            string query = new QueryBuilder().SelectSignal().SelectDataPoint().AddClasses(Nouns.RigActionPlanProcessingStatus).Build();
+            var res = DWISClient.RegisterQuery(query, DisplayQueryCallback);
+            if (!string.IsNullOrEmpty(res.jsonQueryDiff))
+            {
+                var diff = QueryResultsDiff.FromJsonString(res.jsonQueryDiff);
+                if (diff != null)
+                {
+                    DisplayQueryCallback(diff);
+                }
+            }
+        }
+    }
+    private void DisplayQueryCallback(QueryResultsDiff resultsDiff)
+    {
+        if (DWISClient != null && !displaySemanticIdentified && resultsDiff != null && resultsDiff.Added != null && resultsDiff.Added.Count > 0)
+        {
+            if (resultsDiff.Added[0].Items != null && resultsDiff.Added[0].Items.Count > 0)
+            {
+                var id = resultsDiff.Added[0].Items[0];
+
+                if (id != null)
+                {
+                    displaySemanticIdentified = true;
+                    DWISClient.Subscribe("Display", DisplayDataChanged, (id.NameSpace, id.ID, "Display"));
+                }
+            }
+        }
+    }
+    private void DisplayDataChanged(object ud, DWIS.Client.ReferenceImplementation.UADataChange[] dataChanges)
+    {
+        List<HSMStateData> updated = new List<HSMStateData>();
+        // _HSMStateDatas.Clear();
+        if (dataChanges != null && dataChanges.Length > 0 && dataChanges[0].Value != null && dataChanges[0].Value is string)
+        {
+            string json = (string)dataChanges[0].Value;
+            var schedulerData = System.Text.Json.JsonSerializer.Deserialize<SchedulerStatusData>(json, new System.Text.Json.JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
+            var jobs = schedulerData?.InvolvedMachines?.Select(machine => machine.JobName);
+            if (jobs != null && NewJobListDifferent(jobs))
+            {
+                _currentJobs = jobs.ToList();   
+                _schedulerDates.Add(DateTime.UtcNow);
+                _schedulerStatus.Add(Concat(jobs));
+            }
+        }
+    }
+
+    private bool NewJobListDifferent(IEnumerable<string>? newJobList)
+    {
+        if (newJobList == null) { return false; }
+        if(_currentJobs == null && !newJobList.Any())
+        {
+            return false;
+        }
+        if (_currentJobs == null && newJobList.Any())
+        {
+            return true;
+        }
+        if(_currentJobs.Count != newJobList.Count())
+        {
+            return true;
+        }
+        foreach (var job in _currentJobs)
+        {
+            if (!newJobList.Contains(job)) { return true; }   
+        }
+        return false;
+    }
+
+    private string Concat(IEnumerable<string> list)
+    {
+        return string.Join("\r\n ", list);
+    }
+
+
+    internal class HSMStateData
+    {
+        public string? JobName { get; set; }
+        public string? MachineDescription { get; set; }
+        public string? StateName { get; set; }
+        public string? StateDescription { get; set; }
+        public DWISHSM? Machine { get; set; }
+        public List<(string nextStateJob, List<(string eventName, string? description)> eventData)>? TransitionData { get; set; }
+        public (string job, string machine, (string workspaceType, string name, object? value)[] workspace)? WorkspaceStatus { get; set; }
     }
 }

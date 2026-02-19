@@ -20,6 +20,12 @@
     [Parameter]
     public bool ShowTimeAxis { get; set; }
 
+    // [Parameter]
+    // public List<object>? TimeAxisLabelsDates { get; set; }
+
+    // [Parameter]
+    // public List<object>? TimeAxisLabelsTexts { get; set; }
+
     PlotlyChart _chart;
     Config config = new Config() { AutoSizable = true, Responsive = true, ShowSendToCloud = false, ShowEditInChartStudio = false };
     Plotly.Blazor.Layout _layout = new Plotly.Blazor.Layout();
@@ -105,9 +111,16 @@
             {
                              Type = Plotly.Blazor.LayoutLib.YAxisLib.TypeEnum.Date,
                              AutoRange = Plotly.Blazor.LayoutLib.YAxisLib.AutoRangeEnum.Reversed,
-                             Visible = ShowTimeAxis
+                             Visible = ShowTimeAxis,
             }];
 
+        // if (ShowTimeAxis && TimeAxisLabelsDates != null && TimeAxisLabelsTexts != null)
+        // {
+        //     var axis = _layout.YAxis.First();
+        //     axis.TickMode = Plotly.Blazor.LayoutLib.YAxisLib.TickModeEnum.Array;
+        //     axis.TickVals = TimeAxisLabelsDates;
+        //     axis.TickText = TimeAxisLabelsTexts;    
+        // }
         if (AxisDatas != null && AxisDatas.Length > 0)
         {
             _layout.XAxis = new List<Plotly.Blazor.LayoutLib.XAxis>();
@@ -208,8 +221,7 @@
                                             X = new List<object>(),
                                             Y = new List<object>(),
                                             Mode = Plotly.Blazor.Traces.ScatterLib.ModeFlag.Lines,
-                                            XAxis = _axisLookUp[chartData.AxisName],
-
+                                            XAxis = _axisLookUp[chartData.AxisName],                                           
                                         };
                                     _series.Add(trace);
                                     traceIdx = _series.Count - 1;
