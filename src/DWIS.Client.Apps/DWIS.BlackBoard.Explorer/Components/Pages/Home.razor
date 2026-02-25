@@ -5,8 +5,11 @@
 <PageTitle>DWIS Blackboard explorer</PageTitle>
 
 <div style="width:100%; height:100%; display:flex" >
-<VariablesTreeView />
+    <VariablesTreeView DrawerOpen="@DrawerOpen"/>
 </div>
 
 @code
-{}
+{
+    [Parameter]
+    public bool DrawerOpen { get; set; }
+}

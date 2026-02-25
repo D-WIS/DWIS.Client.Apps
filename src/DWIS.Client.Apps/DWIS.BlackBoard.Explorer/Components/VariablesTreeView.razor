@@ -4,11 +4,15 @@
 @using DWIS.SPARQL.Utils
 
 
-<MudGrid>
-    <MudItem xs="5">
+<MudDrawerContainer Class="mud-height-full">
+    <MudDrawer @bind-Open="DrawerOpen" Variant="@DrawerVariant.Persistent" Fixed Width="400px">
+        <MudDrawerHeader>
+            <MudTextField @bind-Value="_searchString"  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable DebounceInterval="500" OnDebounceIntervalElapsed="UpdateProviders"></MudTextField>
+        </MudDrawerHeader>
         <MudTreeView T="NodeIdentifier" SelectionMode="@SelectionMode.MultiSelection" @bind-SelectedValues="FocusItems" Hover>
             <MudTreeViewItem Icon="@Icons.Material.Filled.People" Text="Providers" >
-                @foreach (var provider in BBExplorer.GetProviders())
+                
+                @foreach (var provider in Providers)
                 {
                     <MudTreeViewItem Style=" font-weight:500; font-size:small"  Text="@DisplayProviderString(provider)" Context="variables" Value="@provider">
                             @foreach (var variable in BBExplorer.GetSignalsForProvider(provider))
@@ -20,34 +24,35 @@
            
                     </MudTreeViewItem>
                 }
+
             </MudTreeViewItem>
         </MudTreeView>
-    </MudItem>
-    <MudItem xs="7">
-        <MudPaper>
-            <MudTable Items="_monitorData">
+    </MudDrawer>
+        <MudPaper Width="100%">
+           
+            <MudTable Items="_monitorData" Style="width:100%" >
                 <HeaderContent>
-                        <MudTh>Variable</MudTh>
-                        <MudTh>Value</MudTh>
-                    <MudTh>Sentences</MudTh>
-                    <MudTh>Remove</MudTh>
+                    <MudTh Style="font-weight: bold;">Variable</MudTh>
+                    <MudTh Style="font-weight: bold;">Value</MudTh>
+                    <MudTh Style="font-weight: bold;">Sentences</MudTh>
+                    <MudTh Style="font-weight: bold;">Remove</MudTh>
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd>@DisplayVariableString(context.Key)</MudTd>
                     <MudTd>@context.Value.Value</MudTd>
                     <MudTd>
                         <MudExpansionPanel Text="@((context.Value.Sentences != null?   context.Value.Sentences.Count.ToString() : "0") + " sentence(s)")">
-                            <MudTable Context="sentence" Items="context.Value.Sentences">
+                            <MudTable Bordered Context="sentence" Items="context.Value.Sentences" >
                                 <HeaderContent>
-                                    <MudTh>Verb</MudTh>
-                                    <MudTh>Object</MudTh>
+                                    <MudTh Style="font-weight: bold;">Verb</MudTh>
+                                    <MudTh Style="font-weight: bold;">Object</MudTh>
                                 </HeaderContent>
                                 <RowTemplate >
                                     <MudTd>
-                                       @(sentence.v.ID.StartsWith(QueryBuilder.DDHUBPREFIX) ? sentence.v.ID.Remove(0, QueryBuilder.DDHUBPREFIX.Length) : sentence.v.ID)
+                                       @DisplaySentenceVerb(sentence.v)
                                     </MudTd>
                                     <MudTd>
-                                        @(sentence.o.NameSpace + sentence.o.ID)
+                                        @DisplaySentenceObject(sentence.o)
                                     </MudTd>
                                 </RowTemplate>
                             </MudTable>
@@ -59,18 +64,27 @@
                 </RowTemplate>
             </MudTable>
         </MudPaper>
-    </MudItem>
-</MudGrid>
 
 
+</MudDrawerContainer>
 
 @code {
+    [Parameter]
+    public bool DrawerOpen { get; set; }
 
     private ConcurrentDictionary<NodeIdentifier, MonitorData> _monitorData = new();
 
     private IReadOnlyCollection<NodeIdentifier> FocusItems = new List<NodeIdentifier>();
 
+    private List<NodeIdentifier> Providers = new List<NodeIdentifier>();
 
+    private string _searchString = string.Empty;
+
+    protected override Task OnInitializedAsync()
+    {
+        UpdateProviders(_searchString);
+        return base.OnInitializedAsync();
+    }
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -112,8 +126,61 @@
         }
     }
 
+    private string DisplaySentenceVerb(NodeIdentifier v)
+    {
+        if (v.ID.StartsWith(QueryBuilder.DDHUBPREFIX))
+        { return v.ID.Remove(0, QueryBuilder.DDHUBPREFIX.Length); }
+        else if (v.ID.StartsWith(QueryBuilder.RDFTYPE))
+        {
+            return v.ID.Remove(0, QueryBuilder.RDFTYPE.Length);
+        }
+        else if (v.ID.StartsWith("http://ddhub.no/"))
+        {
+            return v.ID.Remove(0, "http://ddhub.no/".Length);
+        }
+        else if (v.ID.Contains("#type"))
+        {
+            return "type";    
+        }
+        else { return v.ID; }
+    }
 
+    private string DisplaySentenceObject(NodeIdentifier v)
+    {
+        string ns = v.NameSpace;
+        if (ns.StartsWith(QueryBuilder.DDHUBPREFIX))
+        { ns = ns.Remove(0, QueryBuilder.DDHUBPREFIX.Length); }
+        else if (ns.StartsWith(QueryBuilder.RDFTYPE))
+        {
+            ns = ns.Remove(0, QueryBuilder.RDFTYPE.Length);
+        }
+        else if (ns.StartsWith("http://ddhub.no/"))
+        {
+            ns = ns.Remove(0, "http://ddhub.no/".Length);
+        }
+        string id = v.ID;
+        if (id.StartsWith(QueryBuilder.DDHUBPREFIX))
+        {
+            id = id.Remove(0, QueryBuilder.DDHUBPREFIX.Length);
+        }
+        else if (id.StartsWith("http://ddhub.no/"))
+        {
+            id = id.Remove(0, "http://ddhub.no/".Length);
+        }
+        return ns + id;
+    }
 
+    private void UpdateProviders(string searchValue)
+    {
+        if (string.IsNullOrEmpty(_searchString))
+        {
+            Providers = BBExplorer.GetProviders();
+        }
+        else
+        {
+            Providers = BBExplorer.GetProviders().Where((p) => p.ID.Contains(_searchString, StringComparison.OrdinalIgnoreCase) || p.NameSpace.Contains(_searchString, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+    }
 
     private string DisplayProviderString(NodeIdentifier nodeIdentifier)
     {

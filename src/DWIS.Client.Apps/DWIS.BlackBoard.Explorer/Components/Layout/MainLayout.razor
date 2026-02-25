@@ -13,10 +13,16 @@
 
     <MudAppBar Fixed="true" Style="background-color:white; color:black; " >
         <MudImage Src="img/NORCE_Logo_Skjerm_Blaa.png" Height="30" Style="margin-top:5px"></MudImage>
+        <MudSpacer />
+        <MudSwitch @bind-Value="@_drawerOpen" Label="Providers" ></MudSwitch>
     </MudAppBar>
 
     <MudMainContent Style="height:100vh">
-        @Body
+        <DWIS.BlackBoard.Explorer.Components.Pages.Home DrawerOpen="@_drawerOpen" />
     </MudMainContent>
 
 </MudLayout>
+
+@code{
+    bool _drawerOpen = true;
+}
