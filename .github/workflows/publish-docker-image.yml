@@ -37,4 +37,12 @@ jobs:
           tags: digiwells/dwis-logview:stable
           push: true
 
+      - name: Build and push server
+        uses: docker/build-push-action@v6
+        with:
+          context:  main/src/DWIS.BlackBoard.Explorer
+          file: main/src/DWIS.Client.Apps/DWIS.BlackBoard.Explorer/Dockerfile
+          tags: digiwells/dwis-blackboard-explorer:stable
+          push: true
+
 
