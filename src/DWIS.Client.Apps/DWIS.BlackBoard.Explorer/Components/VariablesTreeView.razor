@@ -38,8 +38,8 @@
                     <MudTh Style="font-weight: bold;">Remove</MudTh>
                 </HeaderContent>
                 <RowTemplate>
-                    <MudTd>@DisplayVariableString(context.Key)</MudTd>
-                    <MudTd>@context.Value.Value</MudTd>
+                    <MudTd Style="font-style:italic; ">@DisplayVariableString(context.Key)</MudTd>
+                    <MudTd Style="color:darkblue">@context.Value.Value</MudTd>
                     <MudTd>
                         <MudExpansionPanel Text="@((context.Value.Sentences != null?   context.Value.Sentences.Count.ToString() : "0") + " sentence(s)")">
                             <MudTable Bordered Context="sentence" Items="context.Value.Sentences" >
