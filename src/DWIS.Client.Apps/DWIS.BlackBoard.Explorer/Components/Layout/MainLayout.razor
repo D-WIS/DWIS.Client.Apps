@@ -1,0 +1,22 @@
+﻿@inherits LayoutComponentBase
+@* Required *@
+<MudThemeProvider />
+<MudPopoverProvider />
+
+@* Needed for dialogs *@
+<MudDialogProvider />
+
+@* Needed for snackbars *@
+<MudSnackbarProvider />
+
+<MudLayout >
+
+    <MudAppBar Fixed="true" Style="background-color:white; color:black; " >
+        <MudImage Src="img/NORCE_Logo_Skjerm_Blaa.png" Height="30" Style="margin-top:5px"></MudImage>
+    </MudAppBar>
+
+    <MudMainContent Style="height:100vh">
+        @Body
+    </MudMainContent>
+
+</MudLayout>

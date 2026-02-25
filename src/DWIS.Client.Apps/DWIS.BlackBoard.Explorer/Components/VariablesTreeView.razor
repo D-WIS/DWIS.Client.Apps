@@ -1,0 +1,162 @@
+﻿@inject BlackBoardExplorer BBExplorer
+@inject IOPCUADWISClient DWISClient
+@using System.Collections.Concurrent
+@using DWIS.SPARQL.Utils
+
+
+<MudGrid>
+    <MudItem xs="5">
+        <MudTreeView T="NodeIdentifier" SelectionMode="@SelectionMode.MultiSelection" @bind-SelectedValues="FocusItems" Hover>
+            <MudTreeViewItem Icon="@Icons.Material.Filled.People" Text="Providers" >
+                @foreach (var provider in BBExplorer.GetProviders())
+                {
+                    <MudTreeViewItem Style=" font-weight:500; font-size:small"  Text="@DisplayProviderString(provider)" Context="variables" Value="@provider">
+                            @foreach (var variable in BBExplorer.GetSignalsForProvider(provider))
+                            {
+                                <MudTreeViewItem  Style=" font-weight:300; font-size:small" Text="@DisplayVariableString(variable)" Value="@variable">
+                  
+                                </MudTreeViewItem>
+                            }
+           
+                    </MudTreeViewItem>
+                }
+            </MudTreeViewItem>
+        </MudTreeView>
+    </MudItem>
+    <MudItem xs="7">
+        <MudPaper>
+            <MudTable Items="_monitorData">
+                <HeaderContent>
+                        <MudTh>Variable</MudTh>
+                        <MudTh>Value</MudTh>
+                    <MudTh>Sentences</MudTh>
+                    <MudTh>Remove</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@DisplayVariableString(context.Key)</MudTd>
+                    <MudTd>@context.Value.Value</MudTd>
+                    <MudTd>
+                        <MudExpansionPanel Text="@((context.Value.Sentences != null?   context.Value.Sentences.Count.ToString() : "0") + " sentence(s)")">
+                            <MudTable Context="sentence" Items="context.Value.Sentences">
+                                <HeaderContent>
+                                    <MudTh>Verb</MudTh>
+                                    <MudTh>Object</MudTh>
+                                </HeaderContent>
+                                <RowTemplate >
+                                    <MudTd>
+                                       @(sentence.v.ID.StartsWith(QueryBuilder.DDHUBPREFIX) ? sentence.v.ID.Remove(0, QueryBuilder.DDHUBPREFIX.Length) : sentence.v.ID)
+                                    </MudTd>
+                                    <MudTd>
+                                        @(sentence.o.NameSpace + sentence.o.ID)
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </MudExpansionPanel>
+                    </MudTd>
+                    <MudTd>
+                        <MudButton StartIcon="@Icons.Material.Filled.Delete" IconColor="Color.Error" Variant="Variant.Filled" Size="Size.Small" OnClick="@(() => FocusItems = FocusItems.Where(item => item != context.Key).ToList())"></MudButton>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+
+
+@code {
+
+    private ConcurrentDictionary<NodeIdentifier, MonitorData> _monitorData = new();
+
+    private IReadOnlyCollection<NodeIdentifier> FocusItems = new List<NodeIdentifier>();
+
+
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Task.Run(DisplayLoop);
+        }
+        base.OnAfterRender(firstRender);
+    }
+
+    private async Task DisplayLoop()
+    {
+        PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+        bool looping = false;
+        while(await timer.WaitForNextTickAsync())
+        {
+            if (!looping)
+            {
+                looping = true;
+                ManageMonitorData();
+                if (_monitorData.Any())
+                {
+                    var originalKeys = _monitorData.Keys.ToArray();
+                    var keys = originalKeys.Select(key => (key.NameSpace, key.ID)).ToArray();
+                    if (DWISClient.ReadAnyVariables(out object[] values, keys))
+                    {
+                        foreach (var (key, value) in originalKeys.Zip(values, (k, v) => (k, v)))
+                        {
+                            if (_monitorData.TryGetValue(key, out var data))
+                            {
+                                data.Value = value;
+                            }
+                        }
+                    }
+                }
+                await InvokeAsync(StateHasChanged);
+                looping = false;
+            }
+        }
+    }
+
+
+
+
+    private string DisplayProviderString(NodeIdentifier nodeIdentifier)
+    {
+        return nodeIdentifier.NameSpace.Remove(0, "http://ddhub.no/".Length) + " " + nodeIdentifier.ID;    
+    }
+    private string DisplayVariableString(NodeIdentifier nodeIdentifier)
+    {
+        return  nodeIdentifier.ID;
+    }
+
+    private void ManageMonitorData()
+    {
+        var monitoredKeys = _monitorData.Keys;    
+        var selectedKeys = FocusItems;
+
+        var toAddToMonitor = selectedKeys.Except(monitoredKeys);
+        var toRemoveFromMonitor = monitoredKeys.Except(selectedKeys);
+        foreach (var key in toRemoveFromMonitor)
+        {
+            _monitorData.TryRemove(key, out _);
+        }
+
+        foreach(var key in toAddToMonitor)
+        {
+            _monitorData.TryAdd(key, Generate(key));
+        }
+    }
+
+    private MonitorData Generate(NodeIdentifier nodeIdentifier)
+    {
+        var data = new MonitorData();
+        var sentences = BBExplorer.GetSentences(nodeIdentifier);
+        if (sentences != null)
+        {
+            data.Sentences = sentences.ToList();
+        }
+        return data;
+    }
+
+    public class MonitorData
+    {
+        public object? Value { get; set; }
+        public List<(NodeIdentifier s, NodeIdentifier v, NodeIdentifier o)> Sentences = new();
+
+    }
+}

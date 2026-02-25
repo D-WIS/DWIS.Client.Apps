@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="DWIS.BlackBoard.Explorer/DWIS.BlackBoard.Explorer.csproj" Id="c0537027-879e-47ab-9457-7a8bdf26f414" />
   <Project Path="DWIS.BlackBoard.LogView/DWIS.BlackBoard.LogView.csproj" Id="aced369b-f4cb-41a3-99d1-3251ca29b2a8" />
 </Solution>
