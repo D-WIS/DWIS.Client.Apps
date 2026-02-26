@@ -88,8 +88,6 @@
             }
         }
 
-
-
         _layout.Legend = new List<Plotly.Blazor.LayoutLib.Legend>();
 
         _layout.AutoSize = true;
@@ -106,7 +104,6 @@
         _layout.Shapes = new List<Plotly.Blazor.LayoutLib.Shape>();
         _layout.Shapes.Add(new Plotly.Blazor.LayoutLib.Shape() { Type = Plotly.Blazor.LayoutLib.ShapeLib.TypeEnum.Rect, X0 = 0, X1 = 1, Y0= 0, Y1 = 1, XRef = "paper", YRef = "paper", Line = new Plotly.Blazor.LayoutLib.ShapeLib.Line() { Width = 1, Color = "black" } });
 
-        // _layout.Title = new() { Text = ChartTitle };
         _layout.YAxis = [new Plotly.Blazor.LayoutLib.YAxis()
             {
                              Type = Plotly.Blazor.LayoutLib.YAxisLib.TypeEnum.Date,
@@ -114,13 +111,7 @@
                              Visible = ShowTimeAxis,
             }];
 
-        // if (ShowTimeAxis && TimeAxisLabelsDates != null && TimeAxisLabelsTexts != null)
-        // {
-        //     var axis = _layout.YAxis.First();
-        //     axis.TickMode = Plotly.Blazor.LayoutLib.YAxisLib.TickModeEnum.Array;
-        //     axis.TickVals = TimeAxisLabelsDates;
-        //     axis.TickText = TimeAxisLabelsTexts;    
-        // }
+
         if (AxisDatas != null && AxisDatas.Length > 0)
         {
             _layout.XAxis = new List<Plotly.Blazor.LayoutLib.XAxis>();
@@ -242,7 +233,7 @@
                 if (Control.Play && _chart != null)
                 {
                     int maxItems = 10000;
-
+                    DateTime minDate = DateTime.MinValue;
                     if (Xs.Count() > 0)
                     {
                         if (Control.DisplaySpan != TimeSpan.MaxValue)
@@ -269,7 +260,8 @@
                                 _layout.YAxis.First().AutoRange = null;
                                 //_layout.YAxis.First().AutoRange = Plotly.Blazor.LayoutLib.YAxisLib.AutoRangeEnum.
                                 _layout.YAxis.First().Range = new List<object>() { now, now.AddMinutes(-Control.DisplaySpan.TotalMinutes) };
-                               // await InvokeAsync(() => _chart.Relayout());
+                                minDate = now.AddMinutes(-Control.DisplaySpan.TotalMinutes);
+                                // await InvokeAsync(() => _chart.Relayout());
                             }
                         }
                         else
@@ -281,6 +273,76 @@
                                 await InvokeAsync(() => _chart.Relayout());    
                             }
                         }
+
+                        //x axis range management
+                        var axisGroups = _series.GroupBy(s => ((Scatter)s).XAxis);
+                        foreach(var axisGroup in axisGroups)
+                        {
+                            double min = double.MaxValue;
+                            double max = double.MinValue;
+
+                            foreach (var iTrace in axisGroup)
+                            {
+                                if (iTrace is Scatter scatter)
+                                {
+                                    for (int i = scatter.X.Count - 1; i >= 0; i--)
+                                    {
+                                        if (scatter.Y[i] is DateTime dt)
+                                        {
+                                            if (dt > minDate)
+                                            {
+                                                if (scatter.X[i] is double xVal)
+                                                {
+                                                    if (xVal < min) { min = xVal; }
+                                                    if (xVal > max) { max = xVal; }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (min != double.MaxValue && max != double.MinValue)
+                            {
+                                if (min != max)
+                                {
+                                    min -= (max - min) * 0.05;
+                                    max += (max - min) * 0.05;
+
+                                    string key = axisGroup.Key;
+                                    Plotly.Blazor.LayoutLib.XAxis? xAxis = null;
+                                    if (key == "x")
+                                    {
+                                        xAxis = _layout.XAxis.First();
+                                    }
+                                    else
+                                    {
+                                        if (key.Length > 1 && key.StartsWith("x"))
+                                        {
+                                            string idxStr = key.Substring(1);
+                                            if (int.TryParse(idxStr, out int idx))
+                                            {
+                                                xAxis = _layout.XAxis.ElementAtOrDefault(idx -1);
+                                            }
+                                        }
+                                    }
+
+                                    if (xAxis != null)
+                                    {
+                                        var axisRange = xAxis.Range;
+                                        if (axisRange == null || axisRange.Count != 2 || (double)axisRange[0] != min || (double)axisRange[1] != max)
+                                        {
+                                            xAxis.Range = new List<object>() { min, max };                                          
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         await InvokeAsync(() => _chart.React());
                         await InvokeAsync(() => _chart.ExtendTraces(Ys, Xs, indexes, maxItems));
                     }
