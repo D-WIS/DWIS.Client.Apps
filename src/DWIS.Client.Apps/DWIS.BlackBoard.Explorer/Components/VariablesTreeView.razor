@@ -10,7 +10,7 @@
             <MudTextField @bind-Value="_searchString"  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable DebounceInterval="500" OnDebounceIntervalElapsed="UpdateProviders"></MudTextField>
         </MudDrawerHeader>
         <MudTreeView T="NodeIdentifier" SelectionMode="@SelectionMode.MultiSelection" @bind-SelectedValues="FocusItems" Hover>
-            <MudTreeViewItem Icon="@Icons.Material.Filled.People" Text="Providers" >
+            <MudTreeViewItem Icon="@Icons.Material.Filled.People" Text="Providers"  Expanded>
                 
                 @foreach (var provider in Providers)
                 {
@@ -147,6 +147,7 @@
 
     private string DisplaySentenceObject(NodeIdentifier v)
     {
+        if (v == null) { return "_"; }
         string ns = v.NameSpace;
         if (ns.StartsWith(QueryBuilder.DDHUBPREFIX))
         { ns = ns.Remove(0, QueryBuilder.DDHUBPREFIX.Length); }
@@ -184,7 +185,11 @@
 
     private string DisplayProviderString(NodeIdentifier nodeIdentifier)
     {
-        return nodeIdentifier.NameSpace.Remove(0, "http://ddhub.no/".Length) + " " + nodeIdentifier.ID;    
+        if (nodeIdentifier.NameSpace.StartsWith("http://ddhub.no/"))
+        {
+            return nodeIdentifier.NameSpace.Remove(0, "http://ddhub.no/".Length) + " " + nodeIdentifier.ID;
+        }
+        else return nodeIdentifier.ID;
     }
     private string DisplayVariableString(NodeIdentifier nodeIdentifier)
     {

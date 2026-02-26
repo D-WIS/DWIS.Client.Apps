@@ -14,7 +14,7 @@
     <MudAppBar Fixed="true" Style="background-color:white; color:black; " >
         <MudImage Src="img/NORCE_Logo_Skjerm_Blaa.png" Height="30" Style="margin-top:5px"></MudImage>
         <MudSpacer />
-        <MudSwitch @bind-Value="@_drawerOpen" Label="Providers" ></MudSwitch>
+        <MudSwitch @bind-Value="@_drawerOpen" Label="@(_drawerOpen ? "Hide providers" : "Show providers")" Color="@(_drawerOpen ? Color.Success : Color.Warning)" ></MudSwitch>
     </MudAppBar>
 
     <MudMainContent Style="height:100vh">

@@ -47,9 +47,16 @@ namespace DWIS.BlackBoard.Explorer
 
         public void Init() 
         {
-            string query = new QueryBuilder().SelectSignal().SelectProvider().Build();
-
-            var initial = _dwisClient.RegisterQuery(query, CallBack);
+            string providerNameVariable = "?providerName";
+            QueryBuilder builder = new QueryBuilder();
+            builder.SelectSignal().SelectProvider();
+            builder.AddSelectedVariable(providerNameVariable);
+            builder.AddPatternItem("?provider", Attributes.DataProvider_ProviderName, providerNameVariable);
+            string queryWithName = builder.Build();
+            //var resultsWithNames = _dwisClient.GetQueryResult(queryWithName);
+            //string query = new QueryBuilder().SelectSignal().SelectProvider().Build();
+            
+            var initial = _dwisClient.RegisterQuery(queryWithName, CallBack);
 
             if (initial != default && !string.IsNullOrEmpty(initial.jsonQueryDiff))
             {   
@@ -86,9 +93,9 @@ namespace DWIS.BlackBoard.Explorer
             {
                 foreach (var added in diff.Added) 
                 {
-                    if (added.Count == 2 && added.Items.All(ni => ni != null))
+                    if (added.Count == 3 && added.Items.All(ni => ni != null))
                     {
-                        var providerID = added.Items[1];
+                        var providerID = added.Items[2];
                         var signalID = added.Items[0];
                         if (!Data.VariablesPerProvider.ContainsKey(providerID))
                         {
