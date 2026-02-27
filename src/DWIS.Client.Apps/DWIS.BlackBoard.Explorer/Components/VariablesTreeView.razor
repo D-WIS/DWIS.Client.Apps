@@ -9,7 +9,7 @@
         <MudDrawerHeader>
             <MudTextField @bind-Value="_searchString"  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable DebounceInterval="500" OnDebounceIntervalElapsed="UpdateProviders"></MudTextField>
         </MudDrawerHeader>
-        <MudTreeView T="NodeIdentifier" SelectionMode="@SelectionMode.MultiSelection" @bind-SelectedValues="FocusItems" Hover>
+        <MudTreeView T="NodeIdentifier" SelectionMode="@SelectionMode.MultiSelection" @bind-SelectedValues="FocusItems" AutoSelectParent="false" Hover>
             <MudTreeViewItem Icon="@Icons.Material.Filled.People" Text="Providers"  Expanded>
                 
                 @foreach (var provider in Providers)
@@ -17,7 +17,7 @@
                     <MudTreeViewItem Style=" font-weight:500; font-size:small"  Text="@DisplayProviderString(provider)" Context="variables" Value="@provider">
                             @foreach (var variable in BBExplorer.GetSignalsForProvider(provider))
                             {
-                                <MudTreeViewItem  Style=" font-weight:300; font-size:small" Text="@DisplayVariableString(variable)" Value="@variable">
+                                <MudTreeViewItem   Style=" font-weight:300; font-size:small" Text="@DisplayVariableString(variable)" Value="@variable">
                   
                                 </MudTreeViewItem>
                             }
@@ -199,7 +199,7 @@
     private void ManageMonitorData()
     {
         var monitoredKeys = _monitorData.Keys;    
-        var selectedKeys = FocusItems;
+        var selectedKeys = FocusItems.Where(ni => ni.NameSpace.StartsWith("http://ddhub.no"));
 
         var toAddToMonitor = selectedKeys.Except(monitoredKeys);
         var toRemoveFromMonitor = monitoredKeys.Except(selectedKeys);
