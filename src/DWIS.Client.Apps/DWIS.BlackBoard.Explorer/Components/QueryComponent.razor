@@ -5,51 +5,32 @@
 
 
 <MudGrid>
-    <MudItem xs="12">
-@if (_categories != null)
-{
-    <MudExpansionPanels>
-                  <MudExpansionPanel Expanded Text="Query design" >
-                    <TitleContent>
-                        <div class="d-flex">
-                            <MudIcon Icon="@Icons.Material.Filled.Edit" Size="Size.Large" class="mr-3"></MudIcon>
-                            <MudText Typo="Typo.h4">Query design</MudText>
-                        </div>
-                    </TitleContent>
-                    <ChildContent>
-  <MudGrid>
-    @for (int i = 0; i < _categories.Count; i++)
-    {
-        int idx = i;
-        <MudItem xs="4">
-        <MudCard>
-            <MudCardHeader>
-                <CardHeaderContent>
-                     <MudText Typo="Typo.h5">@(_categories[idx].category + " :" + (string.IsNullOrEmpty(_selectedCategories[idx]) ? "None" : _selectedCategories[idx]))</MudText>
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent>
-                <MudChipSet T="string" CheckMark="true" SelectedColor="Color.Success" SelectedValueChanged="(s) =>  SelectionChanged(s,idx)"  SelectionMode="SelectionMode.ToggleSelection">
-                    @foreach (var category in _categories[idx].nouns)
-                    {
-                        <MudChip Value="category"></MudChip>    
-                    }
-                </MudChipSet>
-            </MudCardContent>
-                        </MudCard>
-                    </MudItem>
+    <MudItem xs="5">
+        @if (_categories != null)
+        {
+            <MudExpansionPanels>
+                @for (int i = 0; i < _categories.Count; i++)
+                {
+                    int idx = i;
+                    <MudExpansionPanel Expanded Text="@(_categories[idx].category + " :" + (string.IsNullOrEmpty(_selectedCategories[idx]) ? "None" : _selectedCategories[idx]))">
+                            <MudChipSet T="string" CheckMark="true" SelectedColor="Color.Success" SelectedValueChanged="(s) =>  SelectionChanged(s,idx)"  SelectionMode="SelectionMode.ToggleSelection">
+                                @foreach (var category in _categories[idx].nouns)
+                                {
+                                    <MudChip Value="category"></MudChip>    
+                                }
+                            </MudChipSet>
+                    </MudExpansionPanel>
                 }
-                </MudGrid>
-                    </ChildContent>
-                </MudExpansionPanel>
             </MudExpansionPanels>
-}
+        }
 
     </MudItem>
-    <MudItem xs="5">
+    <MudItem xs ="7">
+        <MudGrid>
+    <MudItem xs="12">
         <StandaloneCodeEditor  CssClass="my-editor-class"  @ref=_editor ConstructionOptions="EditorConstructionOptions" />
     </MudItem>
-    <MudItem xs="7">
+    <MudItem xs="12">
         <MudButton StartIcon="@Icons.Material.Filled.Search" OnClick="ResolveQuery">
             Resolve query
         </MudButton>
@@ -72,6 +53,8 @@
         </MudTable>    
         }
 
+            </MudItem>
+        </MudGrid>
     </MudItem>
 </MudGrid>
 @code {
