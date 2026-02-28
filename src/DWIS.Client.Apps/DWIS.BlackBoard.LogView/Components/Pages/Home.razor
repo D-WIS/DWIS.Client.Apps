@@ -9,14 +9,13 @@
 @using DWIS.HSM.Scheduler.Base.HSM
 
 <PageTitle>DWIS Blackboard drilling logs</PageTitle>
-
+<ChartInspections LogsConfiguration="@_logsConfiguration"></ChartInspections>
 <div style="width:100%; height:100%; display:flex" >
     @foreach (var item in _logsConfiguration)
     {
         <div style="width:@(_percent)%">
-
             <RealtimeChart AxisDatas="@item.axisDatas" ChartDatas="@item.chardDatas" ChartTitle="@item.title" ShowTimeAxis="@item.showTime"/>
-    </div>    
+        </div>    
     }
 </div>
 

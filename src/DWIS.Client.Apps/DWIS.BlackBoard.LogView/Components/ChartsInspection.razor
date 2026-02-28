@@ -1,0 +1,56 @@
+﻿@inject DWIS.Client.ReferenceImplementation.IOPCUADWISClient? DWISClient
+@inject AppControl Control
+@using DWIS.Vocabulary.Schemas
+@using DWIS.SPARQL.Utils
+@using DWIS.API.DTO
+@using MudBlazor
+
+<MudTable  Items="_queryResults">
+    <HeaderContent>
+        <MudTh>Curve name</MudTh>
+        <MudTh>Identifier</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.name</MudTd>
+        <MudTd>
+            @foreach(var row in context.queryResult.Results)
+            {
+                <div>@row.Items.First().ToString()</div>
+            }
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+
+
+
+
+
+@code {
+    [Parameter]
+    public ChartData[] ChartDatas { get; set; }
+    [Parameter]
+    public string ChartTitle { get; set; }
+    private string[] Types = [Nouns.Measurement];
+
+    private List<(string name, QueryResult queryResult)> _queryResults = new();
+
+    protected override Task OnParametersSetAsync()
+    {
+        if (DWISClient != null && ChartDatas != null)
+        {
+            _queryResults.Clear();
+            foreach (var chartData in ChartDatas)
+            {
+                var q = Types.Select(t => new QueryBuilder().SelectSignal().AddMeasuredClass(chartData.Prototype).Build());
+                var n = Types.Select(t => t + "--" + chartData.Prototype);
+                foreach(var pair in n.Zip(q, (name, query) => (name, query)))
+                {
+                    var qr = DWISClient.GetQueryResult(pair.query);
+                    _queryResults.Add((pair.name, qr));
+                }
+            }
+        }
+        return base.OnParametersSetAsync();
+    }
+}

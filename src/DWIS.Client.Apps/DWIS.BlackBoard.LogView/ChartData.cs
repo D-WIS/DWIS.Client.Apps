@@ -5,6 +5,7 @@
         public bool Play { get; set; } = true;
         public bool FullScreen { get; set; }
         public TimeSpan DisplaySpan { get; set; } = TimeSpan.MaxValue;
+        public bool ShowInspection { get; set; }
     }
 
 

@@ -1,0 +1,163 @@
+﻿@inject IOPCUADWISClient DWISClient
+@using DWIS.Vocabulary.Development
+@using DWIS.Vocabulary.Schemas
+@using DWIS.SPARQL.Utils
+
+
+<MudGrid>
+    <MudItem xs="12">
+@if (_categories != null)
+{
+    <MudExpansionPanels>
+                  <MudExpansionPanel Expanded Text="Query design" >
+                    <TitleContent>
+                        <div class="d-flex">
+                            <MudIcon Icon="@Icons.Material.Filled.Edit" Size="Size.Large" class="mr-3"></MudIcon>
+                            <MudText Typo="Typo.h4">Query design</MudText>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+  <MudGrid>
+    @for (int i = 0; i < _categories.Count; i++)
+    {
+        int idx = i;
+        <MudItem xs="4">
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderContent>
+                     <MudText Typo="Typo.h5">@(_categories[idx].category + " :" + (string.IsNullOrEmpty(_selectedCategories[idx]) ? "None" : _selectedCategories[idx]))</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudChipSet T="string" CheckMark="true" SelectedColor="Color.Success" SelectedValueChanged="(s) =>  SelectionChanged(s,idx)"  SelectionMode="SelectionMode.ToggleSelection">
+                    @foreach (var category in _categories[idx].nouns)
+                    {
+                        <MudChip Value="category"></MudChip>    
+                    }
+                </MudChipSet>
+            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                }
+                </MudGrid>
+                    </ChildContent>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+}
+
+    </MudItem>
+    <MudItem xs="5">
+        <StandaloneCodeEditor  CssClass="my-editor-class"  @ref=_editor ConstructionOptions="EditorConstructionOptions" />
+    </MudItem>
+    <MudItem xs="7">
+        <MudButton StartIcon="@Icons.Material.Filled.Search" OnClick="ResolveQuery">
+            Resolve query
+        </MudButton>
+
+        @if (_queryResult != null && _queryResult.VariablesHeader != null && _queryResult.VariablesHeader.Count > 0)
+        {
+        <MudTable Items="_queryResult.Results">
+            <HeaderContent>
+                    @foreach (var header in _queryResult.VariablesHeader)
+                    {
+                        <MudTh>@header</MudTh>
+                    }
+            </HeaderContent>
+            <RowTemplate>
+                    @foreach (var item in context.Items)
+                    {
+                        <MudTd>@item.ToString()</MudTd>
+                    }
+                </RowTemplate>
+        </MudTable>    
+        }
+
+    </MudItem>
+</MudGrid>
+@code {
+
+    StandaloneCodeEditor _editor;
+    private QueryResult? _queryResult;
+    private StandaloneEditorConstructionOptions EditorConstructionOptions(StandaloneCodeEditor editor)
+    {
+        return new StandaloneEditorConstructionOptions
+        {
+            AutomaticLayout = true,
+            Language = "sparql",
+            Theme = "vs-dark",            
+        };
+    }
+    private DWISVocabulary _vocabulary = DWIS.Vocabulary.Standard.VocabularyProvider.GetDWISVocabulary();
+    private Tree<Noun>? _nounTree;
+
+    private List<(string category, List<string> nouns)>? _categories;
+
+    private string?[]? _selectedCategories;
+
+    private void SelectionChanged(string? selected, int idx)
+    {
+        if (idx >= 0 && _selectedCategories != null && idx < _selectedCategories.Length)
+        {
+            _selectedCategories[idx] = selected;
+            string query = BuildQuery();
+            _editor.SetValue(query);
+        }
+    }
+
+    protected override Task OnInitializedAsync()
+    {
+        string[] categories = [ Nouns.PrototypeData, Nouns.ProcessData, Nouns.PhysicalData];
+        _vocabulary.ToTrees(out _nounTree, out var verbTree);
+        _categories = categories.Select(cat => (cat, GetChildrenNouns(cat))).ToList();
+        _selectedCategories = new string[_categories.Count];
+        return base.OnInitializedAsync();
+    }
+
+    private async void ResolveQuery()
+    {
+        string query =await _editor.GetValue();
+        if (!string.IsNullOrEmpty(query))
+        {
+            if (DWISClient != null)
+            {
+                _queryResult = DWISClient.GetQueryResult(query);
+                await InvokeAsync(StateHasChanged);
+            }    
+        }
+    }
+
+    private List<string> GetChildrenNouns(string root)
+    {
+        if (_nounTree != null && _vocabulary.GetNoun(root, out var noun))
+        {
+            var nounSubTreeNode = _nounTree.GetOrDefault(noun);
+            if (nounSubTreeNode != null)
+            {
+                var nounList = nounSubTreeNode.ToList();
+                if (nounList != null)
+                {
+                    return nounList.Select(n => n.Name).ToList();    
+                }
+            }
+        }
+        return new List<string>();
+    }
+
+    private string BuildQuery()
+    {
+        QueryBuilder builder = new QueryBuilder();
+        builder.SelectSignal().SelectDataPoint();
+        if(_selectedCategories != null)
+        {
+            foreach (var selection in _selectedCategories)
+            {
+                if (selection != null && selection.Any())
+                {
+                    string selected = selection;
+                    builder.AddClasses(selected);
+                }    
+            }
+        }
+        return builder.Build();
+    }
+}

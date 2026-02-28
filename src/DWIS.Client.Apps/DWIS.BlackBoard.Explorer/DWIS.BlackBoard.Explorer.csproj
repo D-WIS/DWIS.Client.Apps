@@ -14,7 +14,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="BlazorMonaco" Version="3.4.0" />
     <PackageReference Include="DWIS.Client.ReferenceImplementation.OPCFoundation" Version="2.2.44" />
+    <PackageReference Include="DWIS.Vocabulary.Standard" Version="1.0.167" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
     <PackageReference Include="MudBlazor" Version="9.0.0" />
   </ItemGroup>

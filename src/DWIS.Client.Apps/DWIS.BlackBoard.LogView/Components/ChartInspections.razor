@@ -1,0 +1,20 @@
+﻿@inject AppControl Control
+
+<MudSwitch @bind-Value="ShowInspection"></MudSwitch>
+@if (ShowInspection && LogsConfiguration != null)
+{
+    <MudGrid>
+        @foreach (var item in LogsConfiguration)
+        {
+            <MudItem xs="6">
+                <ChartsInspection ChartDatas="@item.chardDatas" ChartTitle="@item.title"></ChartsInspection>
+            </MudItem>
+        }
+        </MudGrid>
+}
+@code {
+
+    private bool ShowInspection = false;
+    [Parameter]
+    public (ChartData[] chardDatas, AxisData[] axisDatas, string title, bool showTime)[]? LogsConfiguration { get; set; }
+}
