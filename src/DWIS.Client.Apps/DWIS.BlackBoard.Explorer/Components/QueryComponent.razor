@@ -6,13 +6,14 @@
 
 <MudGrid>
     <MudItem xs="5">
-        @if (_categories != null)
-        {
+        @if (_categories != null)        {
+            <MudText Typo="Typo.h5">Quick query design </MudText>
+
             <MudExpansionPanels>
                 @for (int i = 0; i < _categories.Count; i++)
                 {
                     int idx = i;
-                    <MudExpansionPanel Expanded Text="@(_categories[idx].category + " :" + (string.IsNullOrEmpty(_selectedCategories[idx]) ? "None" : _selectedCategories[idx]))">
+                    <MudExpansionPanel Class="h4" Expanded Text="@(_categories[idx].category + " :" + (string.IsNullOrEmpty(_selectedCategories[idx]) ? "None" : _selectedCategories[idx]))">
                             <MudChipSet T="string" CheckMark="true" SelectedColor="Color.Success" SelectedValueChanged="(s) =>  SelectionChanged(s,idx)"  SelectionMode="SelectionMode.ToggleSelection">
                                 @foreach (var category in _categories[idx].nouns)
                                 {
@@ -26,22 +27,24 @@
 
     </MudItem>
     <MudItem xs ="7">
+        <MudText Typo="Typo.h5">SparQL </MudText>
+
         <MudGrid>
     <MudItem xs="12">
-        <StandaloneCodeEditor  CssClass="my-editor-class"  @ref=_editor ConstructionOptions="EditorConstructionOptions" />
+        <StandaloneCodeEditor   CssClass="my-editor-class"  @ref=_editor ConstructionOptions="EditorConstructionOptions" />
     </MudItem>
     <MudItem xs="12">
-        <MudButton StartIcon="@Icons.Material.Filled.Search" OnClick="ResolveQuery">
+        <MudButton Variant=" Variant.Outlined" StartIcon="@Icons.Material.Filled.Search" IconColor="Color.Secondary" OnClick="ResolveQuery">
             Resolve query
         </MudButton>
 
         @if (_queryResult != null && _queryResult.VariablesHeader != null && _queryResult.VariablesHeader.Count > 0)
         {
-        <MudTable Items="_queryResult.Results">
+        <MudTable Bordered Items="_queryResult.Results">
             <HeaderContent>
                     @foreach (var header in _queryResult.VariablesHeader)
                     {
-                        <MudTh>@header</MudTh>
+                                <MudTh Style="font-weight: bold;">@header</MudTh>
                     }
             </HeaderContent>
             <RowTemplate>

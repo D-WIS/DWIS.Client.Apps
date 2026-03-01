@@ -61,6 +61,7 @@ h1:focus {
 
 .my-editor-class { /* applies to all editor instances with this class */
     height: 300px;
+    margin-top: 6px;
 }
 
 .monaco-editor-container { /* applies to all editor instances */

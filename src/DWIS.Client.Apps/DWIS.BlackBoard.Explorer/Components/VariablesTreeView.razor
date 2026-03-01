@@ -4,8 +4,8 @@
 @using DWIS.SPARQL.Utils
 
 
-<MudDrawerContainer Class="mud-height-full">
-    <MudDrawer @bind-Open="DrawerOpen" Variant="@DrawerVariant.Persistent" Fixed Width="400px">
+<MudDrawerContainer Style="width:100%" Class="mud-height-full">
+    <MudDrawer @bind-Open="DrawerOpen" Variant="@DrawerVariant.Persistent" Fixed Width="500px">
         <MudDrawerHeader>
             <MudTextField @bind-Value="_searchString"  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable DebounceInterval="500" OnDebounceIntervalElapsed="UpdateProviders"></MudTextField>
         </MudDrawerHeader>
@@ -28,9 +28,9 @@
             </MudTreeViewItem>
         </MudTreeView>
     </MudDrawer>
-        <MudPaper Width="100%">
+        <MudPaper >
            
-            <MudTable Items="_monitorData" Style="width:100%" >
+            <MudTable Bordered  Items="_monitorData" Style="width:100%; margin-left:10px; margin-right:10px" >
                 <HeaderContent>
                     <MudTh Style="font-weight: bold;">Variable</MudTh>
                     <MudTh Style="font-weight: bold;">Value</MudTh>
