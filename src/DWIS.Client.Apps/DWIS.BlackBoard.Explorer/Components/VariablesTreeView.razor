@@ -83,6 +83,9 @@
     protected override Task OnInitializedAsync()
     {
         UpdateProviders(_searchString);
+
+        BBExplorer.CallBackAction =(()=> UpdateProviders(_searchString));
+
         return base.OnInitializedAsync();
     }
 

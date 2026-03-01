@@ -18,6 +18,8 @@ namespace DWIS.BlackBoard.Explorer
 
         public ExplorerData Data { get; private set; } = new();
 
+        public Action? CallBackAction { get; set; }
+
         public BlackBoardExplorer(IOPCUADWISClient dwisClient)
         {
             _dwisClient = dwisClient;
@@ -107,6 +109,10 @@ namespace DWIS.BlackBoard.Explorer
                             Data.VariablesPerProvider[providerID].Add(signalID);
                         }
                     }
+                }
+                if (CallBackAction != null) 
+                {
+                    Task.Run(CallBackAction);
                 }
             }
         }
