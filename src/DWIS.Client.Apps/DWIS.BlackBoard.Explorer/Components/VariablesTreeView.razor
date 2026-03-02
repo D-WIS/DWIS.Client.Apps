@@ -5,12 +5,32 @@
 
 
 <MudDrawerContainer Style="width:100%" Class="mud-height-full">
-    <MudDrawer @bind-Open="DrawerOpen" Variant="@DrawerVariant.Persistent" Fixed Width="500px">
-        <MudDrawerHeader>
-            <MudTextField @bind-Value="_searchString"  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable DebounceInterval="500" OnDebounceIntervalElapsed="UpdateProviders"></MudTextField>
-        </MudDrawerHeader>
+    <MudDrawer @bind-Open="DrawerOpen" Variant="@DrawerVariant.Persistent" Fixed Width="700px">
+       @*  <MudDrawerHeader>
+             <div style="margin-left:8px;">
+                <MudIcon Icon="@Icons.Material.Filled.People"></MudIcon> 
+                <MudText Style="margin-left:8px" Typo="Typo.h4"> Providers</MudText>
+            </div>
+            <div style="margin-left:8px;">
+                <MudTextField @bind-Value="_searchString"  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable DebounceInterval="500" OnDebounceIntervalElapsed="UpdateProviders"></MudTextField>
+            </div>
+        </MudDrawerHeader> *@
+
+        <div style="margin-left:8px;">
+            @* <MudIcon Icon="@Icons.Material.Filled.People"></MudIcon> *@
+            <MudText Style="margin-left:8px" Typo="Typo.h5"> Providers</MudText>
+        </div>
+        <div style="margin-left:8px; margin-top:5px;">
+            <MudTextField @bind-Value="_searchString" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable DebounceInterval="500" OnDebounceIntervalElapsed="UpdateProviders"></MudTextField>
+        </div>
+
+
         <MudTreeView T="NodeIdentifier" SelectionMode="@SelectionMode.MultiSelection" @bind-SelectedValues="FocusItems" AutoSelectParent="false" Hover>
-            <MudTreeViewItem Icon="@Icons.Material.Filled.People" Text="Providers"  Expanded>
+
+
+
+
+            @* <MudTreeViewItem Icon="@Icons.Material.Filled.People" Text="Providers"  Expanded> *@
                 
                 @foreach (var provider in Providers)
                 {
@@ -25,12 +45,12 @@
                     </MudTreeViewItem>
                 }
 
-            </MudTreeViewItem>
+            @* </MudTreeViewItem> *@
         </MudTreeView>
     </MudDrawer>
         <MudPaper >
-           
-            <MudTable Bordered  Items="_monitorData" Style="width:100%; margin-left:10px; margin-right:10px" >
+        <MudText Style="margin-left:8px" Typo="Typo.h5"> Variables</MudText>
+            <MudTable Bordered  Items="_monitorData" Style="width:100%; margin-left:10px; margin-right:10px; margin-top:5px" >
                 <HeaderContent>
                     <MudTh Style="font-weight: bold;">Variable</MudTh>
                     <MudTh Style="font-weight: bold;">Value</MudTh>
@@ -182,7 +202,7 @@
         }
         else
         {
-            Providers = BBExplorer.GetProviders().Where((p) => p.ID.Contains(_searchString, StringComparison.OrdinalIgnoreCase) || p.NameSpace.Contains(_searchString, StringComparison.OrdinalIgnoreCase)).ToList();
+            Providers = BBExplorer.GetProviders().Where((p) => p.ID.Contains(_searchString, StringComparison.OrdinalIgnoreCase) || p.NameSpace.Contains(_searchString, StringComparison.OrdinalIgnoreCase) || BBExplorer.GetSignalsForProvider(p).Any(s => s.ID.Contains(_searchString, StringComparison.OrdinalIgnoreCase) || s.NameSpace.Contains(_searchString, StringComparison.OrdinalIgnoreCase))).ToList();
         }
     }
 
