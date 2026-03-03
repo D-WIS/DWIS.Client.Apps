@@ -2,53 +2,34 @@
 @inject IOPCUADWISClient DWISClient
 @using System.Collections.Concurrent
 @using DWIS.SPARQL.Utils
-
+@using DWIS.Vocabulary.Schemas
 
 <MudDrawerContainer Style="width:100%" Class="mud-height-full">
     <MudDrawer @bind-Open="DrawerOpen" Variant="@DrawerVariant.Persistent" Fixed Width="700px">
-       @*  <MudDrawerHeader>
-             <div style="margin-left:8px;">
-                <MudIcon Icon="@Icons.Material.Filled.People"></MudIcon> 
-                <MudText Style="margin-left:8px" Typo="Typo.h4"> Providers</MudText>
-            </div>
-            <div style="margin-left:8px;">
-                <MudTextField @bind-Value="_searchString"  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable DebounceInterval="500" OnDebounceIntervalElapsed="UpdateProviders"></MudTextField>
-            </div>
-        </MudDrawerHeader> *@
 
         <div style="margin-left:8px;">
-            @* <MudIcon Icon="@Icons.Material.Filled.People"></MudIcon> *@
             <MudText Style="margin-left:8px" Typo="Typo.h5"> Providers</MudText>
         </div>
         <div style="margin-left:8px; margin-top:5px;">
             <MudTextField @bind-Value="_searchString" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable DebounceInterval="500" OnDebounceIntervalElapsed="UpdateProviders"></MudTextField>
         </div>
 
-
         <MudTreeView T="NodeIdentifier" SelectionMode="@SelectionMode.MultiSelection" @bind-SelectedValues="FocusItems" AutoSelectParent="false" Hover>
-
-
-
-
-            @* <MudTreeViewItem Icon="@Icons.Material.Filled.People" Text="Providers"  Expanded> *@
-                
-                @foreach (var provider in Providers)
-                {
-                    <MudTreeViewItem Style=" font-weight:500; font-size:small"  Text="@DisplayProviderString(provider)" Context="variables" Value="@provider">
-                            @foreach (var variable in BBExplorer.GetSignalsForProvider(provider))
-                            {
-                                <MudTreeViewItem   Style=" font-weight:300; font-size:small" Text="@DisplayVariableString(variable)" Value="@variable">
+            @foreach (var provider in Providers)
+            {
+                <MudTreeViewItem Style=" font-weight:500; font-size:small"  Text="@DisplayProviderString(provider)" Context="variables" Value="@provider">
+                        @foreach (var variable in BBExplorer.GetSignalsForProvider(provider))
+                        {
+                            <MudTreeViewItem   Style=" font-weight:300; font-size:small" Text="@DisplayVariableString(variable)" Value="@variable">
                   
-                                </MudTreeViewItem>
-                            }
+                            </MudTreeViewItem>
+                        }
            
-                    </MudTreeViewItem>
-                }
-
-            @* </MudTreeViewItem> *@
+                </MudTreeViewItem>
+            }
         </MudTreeView>
     </MudDrawer>
-        <MudPaper >
+        <MudPaper  Outlined="false">
         <MudText Style="margin-left:8px" Typo="Typo.h5"> Variables</MudText>
             <MudTable Bordered  Items="_monitorData" Style="width:100%; margin-left:10px; margin-right:10px; margin-top:5px" >
                 <HeaderContent>
@@ -58,11 +39,11 @@
                     <MudTh Style="font-weight: bold;">Remove</MudTh>
                 </HeaderContent>
                 <RowTemplate>
-                    <MudTd Style="font-style:italic; ">@DisplayVariableString(context.Key)</MudTd>
+                    <MudTd Style="font-style:italic; color:darkcyan">@DisplayVariableString(context.Key)</MudTd>
                     <MudTd Style="color:darkblue">@context.Value.Value</MudTd>
                     <MudTd>
-                        <MudExpansionPanel Text="@((context.Value.Sentences != null?   context.Value.Sentences.Count.ToString() : "0") + " sentence(s)")">
-                            <MudTable Bordered Context="sentence" Items="context.Value.Sentences" >
+                    <MudExpansionPanel Text="@((context.Value.Sentences != null ? context.Value.FilteredSentences.Count.ToString() : "0") + " sentence(s)")">
+                        <MudTable Bordered Context="sentence" Items="context.Value.FilteredSentences">
                                 <HeaderContent>
                                     <MudTh Style="font-weight: bold;">Verb</MudTh>
                                     <MudTh Style="font-weight: bold;">Object</MudTh>
@@ -79,7 +60,8 @@
                         </MudExpansionPanel>
                     </MudTd>
                     <MudTd>
-                        <MudButton StartIcon="@Icons.Material.Filled.Delete" IconColor="Color.Error" Variant="Variant.Filled" Size="Size.Small" OnClick="@(() => FocusItems = FocusItems.Where(item => item != context.Key).ToList())"></MudButton>
+                    <MudIconButton Color="Color.Error" Icon="@Icons.Material.Filled.Delete" OnClick="@(() => FocusItems = FocusItems.Where(item => item != context.Key).ToList())"></MudIconButton>
+                       
                     </MudTd>
                 </RowTemplate>
             </MudTable>
@@ -253,5 +235,6 @@
         public object? Value { get; set; }
         public List<(NodeIdentifier s, NodeIdentifier v, NodeIdentifier o)> Sentences = new();
 
+        public List<(NodeIdentifier s, NodeIdentifier v, NodeIdentifier o)> FilteredSentences => Sentences.Where(s => (!s.o.ID.EndsWith("owl#NamedIndividual") && !s.o.ID.EndsWith(Nouns.DWISNoun) && !s.v.ID.EndsWith(Verbs.DWISVerb) && s.o.ID != "_")).ToList();
     }
 }

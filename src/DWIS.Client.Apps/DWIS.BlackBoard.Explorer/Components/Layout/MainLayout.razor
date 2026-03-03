@@ -14,10 +14,10 @@
     <MudAppBar Fixed="true" Style="background-color:white; color:black; " >
         <MudImage Src="img/NORCE_Logo_Skjerm_Blaa.png" Height="30" Style="margin-top:5px"></MudImage>
         <MudSpacer />
-        <MudText Typo="Typo.h4">Blackboard explorer</MudText>
+        <MudText Typo="Typo.h3" Style="color:darkblue">Blackboard explorer</MudText>
         <MudSpacer />
-        <MudText Typo="Typo.h4">@(_showQueries ? "Query view" : "Provider view")</MudText>
-        <MudSpacer />
+       @*  <MudText Typo="Typo.h4">@(_showQueries ? "Query view" : "Provider view")</MudText>
+        <MudSpacer /> *@
         <MudSwitch @bind-Value="@_showQueries" Label="Provider view / Query view"></MudSwitch>
         @if (!_showQueries)
         {
