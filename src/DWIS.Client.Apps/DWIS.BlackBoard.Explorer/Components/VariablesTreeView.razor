@@ -5,7 +5,7 @@
 @using DWIS.Vocabulary.Schemas
 
 <MudDrawerContainer Style="width:100%" Class="mud-height-full">
-    <MudDrawer @bind-Open="DrawerOpen" Variant="@DrawerVariant.Persistent" Fixed Width="700px">
+    <MudDrawer @bind-Open="_drawerOpen" Variant="@DrawerVariant.Persistent" Fixed Width="700px">
 
         <div style="margin-left:8px;">
             <MudText Style="margin-left:8px" Typo="Typo.h5"> Providers</MudText>
@@ -30,7 +30,10 @@
         </MudTreeView>
     </MudDrawer>
         <MudPaper  Outlined="false">
+           
         <MudText Style="margin-left:8px" Typo="Typo.h5"> Variables</MudText>
+        <MudSwitch @bind-Value="@_drawerOpen" Label="@(_drawerOpen ? "Hide providers" : "Show providers")" Color="@(_drawerOpen? Color.Success: Color.Warning)"></MudSwitch>
+      
             <MudTable Bordered  Items="_monitorData" Style="width:100%; margin-left:10px; margin-right:10px; margin-top:5px" >
                 <HeaderContent>
                     <MudTh Style="font-weight: bold;">Variable</MudTh>
@@ -71,8 +74,7 @@
 </MudDrawerContainer>
 
 @code {
-    [Parameter]
-    public bool DrawerOpen { get; set; }
+    public bool _drawerOpen  = true;
 
     private ConcurrentDictionary<NodeIdentifier, MonitorData> _monitorData = new();
 

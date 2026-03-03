@@ -16,22 +16,40 @@
         <MudSpacer />
         <MudText Typo="Typo.h3" Style="color:darkblue">Blackboard explorer</MudText>
         <MudSpacer />
+        <MudButton StartIcon="@Icons.Material.Filled.People" OnClick="() => ProviderView =true" DropShadow="@ProviderView">Provider view</MudButton>
+        <MudButton StartIcon="@Icons.Material.Filled.LocationSearching" OnClick="() => QueryView = true" DropShadow="@QueryView">Query view</MudButton>
        @*  <MudText Typo="Typo.h4">@(_showQueries ? "Query view" : "Provider view")</MudText>
         <MudSpacer /> *@
-        <MudSwitch @bind-Value="@_showQueries" Label="Provider view / Query view"></MudSwitch>
+        @* < MudSwitch @bind-Value="@_showQueries" Label="Provider view / Query view"></MudSwitch>
         @if (!_showQueries)
         {
             <MudSwitch @bind-Value="@_drawerOpen" Label="@(_drawerOpen ? "Hide providers" : "Show providers")" Color="@(_drawerOpen ? Color.Success : Color.Warning)" ></MudSwitch>                    
-        }
+        } 
+        *@
     </MudAppBar>
 
     <MudMainContent Style="height:100vh">
-        <DWIS.BlackBoard.Explorer.Components.Pages.Home ShowQueryPage="@_showQueries" DrawerOpen="@_drawerOpen" />
+        <DWIS.BlackBoard.Explorer.Components.Pages.Home ShowQueryPage="@_queryView" />
     </MudMainContent>
 
 </MudLayout>
 
 @code{
-    bool _drawerOpen = true;
-    bool _showQueries = false;
+    bool _providerView = true;
+    bool _queryView = false;
+
+    bool ProviderView
+    { 
+        get { return _providerView; }
+        set {
+            _providerView = value; _queryView = !_providerView;
+        } 
+    }
+    bool QueryView
+    { 
+        get { return _queryView; }
+        set {
+            _queryView = value; _providerView = !_queryView;
+        } 
+    }
 }

@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="DWIS.BlackBoard.Explorer/DWIS.BlackBoard.Explorer.csproj" Id="c0537027-879e-47ab-9457-7a8bdf26f414" />
   <Project Path="DWIS.BlackBoard.LogView/DWIS.BlackBoard.LogView.csproj" Id="aced369b-f4cb-41a3-99d1-3251ca29b2a8" />
+  <Project Path="DWIS.Blackboard.ManifestQuickPush/DWIS.Blackboard.ManifestQuickPush.csproj" Id="84d3ff9e-9b8b-4c49-80ca-54931a154e6d" />
 </Solution>

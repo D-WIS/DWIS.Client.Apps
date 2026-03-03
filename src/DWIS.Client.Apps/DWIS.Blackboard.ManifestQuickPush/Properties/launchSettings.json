@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "DWIS.Blackboard.ManifestQuickPush": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
