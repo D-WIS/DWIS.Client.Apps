@@ -11,9 +11,13 @@
     {
         <QueryComponent></QueryComponent>    
     }
-    else
+    else if(ShowProviderPagePage)
     {
         <VariablesTreeView />            
+    }
+    else if(ShowVocabularyPage)
+    {
+        <InstanceEdition />            
     }
 </div>
 
@@ -24,4 +28,10 @@
 
     [Parameter]
     public bool ShowQueryPage { get; set; }
+
+    [Parameter]
+    public bool ShowProviderPagePage { get; set; }
+
+    [Parameter]
+    public bool ShowVocabularyPage { get; set; }
 }

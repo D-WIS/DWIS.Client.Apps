@@ -18,6 +18,7 @@
         <MudSpacer />
         <MudButton StartIcon="@Icons.Material.Filled.People" OnClick="() => ProviderView =true" DropShadow="@ProviderView">Provider view</MudButton>
         <MudButton StartIcon="@Icons.Material.Filled.LocationSearching" OnClick="() => QueryView = true" DropShadow="@QueryView">Query view</MudButton>
+        <MudButton StartIcon="@Icons.Material.Filled.MenuBook" OnClick="() => VocabularyView = true"     DropShadow="@VocabularyView">Vocabulary view</MudButton>
        @*  <MudText Typo="Typo.h4">@(_showQueries ? "Query view" : "Provider view")</MudText>
         <MudSpacer /> *@
         @* < MudSwitch @bind-Value="@_showQueries" Label="Provider view / Query view"></MudSwitch>
@@ -29,7 +30,7 @@
     </MudAppBar>
 
     <MudMainContent Style="height:100vh">
-        <DWIS.BlackBoard.Explorer.Components.Pages.Home ShowQueryPage="@_queryView" />
+        <DWIS.BlackBoard.Explorer.Components.Pages.Home ShowQueryPage="@_queryView" ShowProviderPagePage="@_providerView" ShowVocabularyPage="_vocabularyView" />
     </MudMainContent>
 
 </MudLayout>
@@ -37,19 +38,29 @@
 @code{
     bool _providerView = true;
     bool _queryView = false;
+    bool _vocabularyView = false;
 
     bool ProviderView
     { 
         get { return _providerView; }
         set {
-            _providerView = value; _queryView = !_providerView;
+            _providerView = value;
+            if (_providerView) { _queryView = false; _vocabularyView = false; }
         } 
     }
     bool QueryView
     { 
         get { return _queryView; }
         set {
-            _queryView = value; _providerView = !_queryView;
+            _queryView = value; if (_queryView) { _vocabularyView = false; _providerView = false; }
+        } 
+    }
+    bool VocabularyView
+    { 
+        get { return _vocabularyView; }
+        set {
+            _vocabularyView = value;
+            if (_vocabularyView) { _queryView = false; _providerView = false; }
         } 
     }
 }
