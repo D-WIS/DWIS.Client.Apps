@@ -62,8 +62,10 @@ namespace DWIS.BlackBoard.Explorer
 
         public IEnumerable<(NodeIdentifier s, NodeIdentifier v, NodeIdentifier o)>? GetSentences(NodeIdentifier id)
         {
-            string variableRessource = QueryBuilder.GetResourcePatternItem(id.NameSpace, id.ID);
+            List<(NodeIdentifier s, NodeIdentifier v, NodeIdentifier o)>? result = new();
 
+
+            string variableRessource = QueryBuilder.GetResourcePatternItem(id.NameSpace, id.ID);
 
             QueryBuilder queryBuilder = new();
             queryBuilder.SelectDataPoint();
@@ -77,10 +79,66 @@ namespace DWIS.BlackBoard.Explorer
             var queryResult = _dwisClient.GetQueryResult(query);
             if (queryResult != null && queryResult.Results!= null)
             {
-                return queryResult.Results.Select(result => (result[0], result[1], result[2]));                
+                result.AddRange(queryResult.Results.Select(result => (result[0], result[1], result[2])));
             }
-            return null;
+
+            queryBuilder = new();
+            queryBuilder.SelectDataPoint();
+            queryBuilder.AddSelectedVariable("?verb");
+            queryBuilder.AddSelectedVariable("?subject");
+            queryBuilder.AddPatternItem(QueryBuilder.DATAPOINT_VARIABLE, Verbs.HasDynamicValue, variableRessource);
+            queryBuilder.AddPatternItem("?subject", "?verb", QueryBuilder.DATAPOINT_VARIABLE);
+            query = queryBuilder.Build();
+            query = query.Replace(QueryBuilder.DDHUBPREFIX + "?verb", "?verb");
+
+            queryResult = _dwisClient.GetQueryResult(query);
+            if (queryResult != null && queryResult.Results != null)
+            {
+                
+                    result.AddRange(queryResult.Results.Select(result => (result[0], result[1], result[2])));
+               
+            }
+            return result;
         }
+
+
+        public IEnumerable<(NodeIdentifier s, NodeIdentifier v, NodeIdentifier o)>? GetGeneralSentences(NodeIdentifier id)
+        {
+            List<(NodeIdentifier s, NodeIdentifier v, NodeIdentifier o)>? result = new();
+
+
+            string variableRessource = QueryBuilder.GetResourcePatternItem(id.NameSpace, id.ID);
+
+            QueryBuilder queryBuilder = new();
+            queryBuilder.AddSelectedVariable("?verb");
+            queryBuilder.AddSelectedVariable("?object");
+            queryBuilder.AddPatternItem(variableRessource, "?verb", "?object");
+            string query = queryBuilder.Build();
+            query = query.Replace(QueryBuilder.DDHUBPREFIX + "?verb", "?verb");
+
+            var queryResult = _dwisClient.GetQueryResult(query);
+            if (queryResult != null && queryResult.Results != null)
+            {
+                result.AddRange(queryResult.Results.Select(result => (id, result[0], result[1])));
+            }
+
+            queryBuilder = new();
+            queryBuilder.AddSelectedVariable("?verb");
+            queryBuilder.AddSelectedVariable("?subject");
+            queryBuilder.AddPatternItem("?subject", "?verb", variableRessource);
+            query = queryBuilder.Build();
+            query = query.Replace(QueryBuilder.DDHUBPREFIX + "?verb", "?verb");
+
+            queryResult = _dwisClient.GetQueryResult(query);
+            if (queryResult != null && queryResult.Results != null)
+            {
+                result.AddRange(queryResult.Results.Select(result => (result[1], result[0], id)));
+
+            }
+            return result;
+        }
+
+
 
         private void CallBack(QueryResultsDiff diff) 
         {

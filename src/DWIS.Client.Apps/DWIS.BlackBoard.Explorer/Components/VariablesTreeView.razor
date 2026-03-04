@@ -14,7 +14,7 @@
             <MudTextField @bind-Value="_searchString" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable DebounceInterval="500" OnDebounceIntervalElapsed="UpdateProviders"></MudTextField>
         </div>
 
-        <MudTreeView T="NodeIdentifier" SelectionMode="@SelectionMode.MultiSelection" @bind-SelectedValues="FocusItems" AutoSelectParent="false" Hover>
+        <MudTreeView Dense T="NodeIdentifier" SelectionMode="@SelectionMode.MultiSelection" @bind-SelectedValues="FocusItems" AutoSelectParent="false" Hover>
             @foreach (var provider in Providers)
             {
                 <MudTreeViewItem Style=" font-weight:500; font-size:small"  Text="@DisplayProviderString(provider)" Context="variables" Value="@provider" >
@@ -30,63 +30,79 @@
         </MudTreeView>
     </MudDrawer>
 
-        <div style="display: inline-flex;">
+    <div style="display: inline-flex;">
         <MudText Style="margin-left:8px" Typo="Typo.h5"> Variables</MudText>
-            <MudSwitch @bind-Value="@_drawerOpen" Label="@(_drawerOpen ? "Hide providers" : "Show providers")" Color="@(_drawerOpen? Color.Success: Color.Warning)"></MudSwitch>
-        </div>
+        <MudSwitch @bind-Value="@_drawerOpen" Label="@(_drawerOpen ? "Hide providers" : "Show providers")" Color="@(_drawerOpen? Color.Success: Color.Warning)"></MudSwitch>
+    </div>
              
         
-            <MudDataGrid Style="width:1500px" FixedHeader Items="_monitorData" T="KeyValuePair<NodeIdentifier, MonitorData>" HorizontalScrollbar="true" Bordered="true" Dense="true">
-                <Columns>
-                    <HierarchyColumn HeaderStyle="width:50px;"></HierarchyColumn>
-                    <PropertyColumn HeaderStyle="font-weight: bold; width:700px;"
-                     @*    Style="width:40%"   *@
-                        Property="x => DisplayVariableString(x.Key)" 
-                        Title="Variable">
-                    </PropertyColumn>
+    <MudDataGrid Style="width:1500px" FixedHeader Items="_monitorData" T="KeyValuePair<NodeIdentifier, MonitorData>" HorizontalScrollbar="true" Bordered="true" Dense="true">
+        <Columns>
+            <HierarchyColumn HeaderStyle="width:50px;"></HierarchyColumn>
+            <PropertyColumn HeaderStyle="font-weight: bold; width:700px;"
+                @*    Style="width:40%"   *@
+                Property="x => DisplayVariableString(x.Key)" 
+                Title="Variable">
+            </PropertyColumn>
 
-                    <PropertyColumn      HeaderStyle="font-weight: bold; width:650px;"
-                      @*   Style="width:40%" 
-                        CellStyle="color: darkblue;"  *@
-                        Property="x => x.Value.Value" 
-                        Title="Value">
-                    </PropertyColumn>
+            <PropertyColumn      HeaderStyle="font-weight: bold; width:650px;"
+               
+                CellStyle="color: darkblue;" 
+                Property="x => x.Value.Value" 
+                Title="Value">
+            </PropertyColumn>
 
-                    <TemplateColumn HeaderStyle="font-weight: bold;width:100px; "
-                        T="KeyValuePair<NodeIdentifier, MonitorData>" 
-                       @*  Style="width:10%"  *@
+            <TemplateColumn HeaderStyle="font-weight: bold;width:100px; "
+                T="KeyValuePair<NodeIdentifier, MonitorData>" 
+                @*  Style="width:10%"  *@
                        
-                        Title="Remove">
+                Title="Remove">
 
-                        <CellTemplate>
-                            <MudIconButton 
-                                Color="Color.Error" 
-                                Icon="@Icons.Material.Filled.Delete" 
-                                OnClick="@(() => FocusItems = FocusItems.Where(item => item != context.Item.Key).ToList())" />
-                        </CellTemplate>
+                <CellTemplate>
+                    <MudIconButton 
+                        Color="Color.Error" 
+                        Icon="@Icons.Material.Filled.Delete" 
+                        OnClick="@(() => FocusItems = FocusItems.Where(item => item != context.Item.Key).ToList())" />
+                </CellTemplate>
 
-                    </TemplateColumn>
-                </Columns>
-                <ChildRowContent>
-                    <MudTable Style="width:100%" Bordered Context="sentence" Items="context.Item.Value.FilteredSentences">
-                        <HeaderContent>
-                            <MudTh Style="font-weight: bold;">Verb</MudTh>
-                            <MudTh Style="font-weight: bold;">Object</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd>
-                                @DisplaySentenceVerb(sentence.v)
-                            </MudTd>
-                            <MudTd>
-                                @DisplaySentenceObject(sentence.o)
-                            </MudTd>
-                        </RowTemplate>
-                    </MudTable>
-                </ChildRowContent>
-            </MudDataGrid>
- 
+            </TemplateColumn>
+        </Columns>
+        <ChildRowContent>
+            <MudTable Style="width:100%" Bordered Context="sentence" Items="context.Item.Value.FilteredSentences">
+                <HeaderContent>
+                    <MudTh Style="font-weight: bold;">Inspect</MudTh>
+                    <MudTh Style="font-weight: bold;">Subject</MudTh>
 
-
+                    <MudTh Style="font-weight: bold;">Verb</MudTh>
+                    <MudTh Style="font-weight: bold;">Object</MudTh>
+                    <MudTh Style="font-weight: bold;">Inspect</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>
+                        @if (sentence.s != context.Item.Key)
+                        {
+                            <MudButton StartIcon="@Icons.Material.Filled.Explore" OnClick="() => AddSentences(context.Item.Value, sentence.s)"></MudButton>
+                        }
+                    </MudTd>
+                    <MudTd>
+                         @((MarkupString)DisplaySentenceObject(sentence.s))
+                    </MudTd>
+                    <MudTd>
+                        @DisplaySentenceVerb(sentence.v)
+                    </MudTd>
+                    <MudTd>
+                         @((MarkupString)DisplaySentenceObject(sentence.o))
+                    </MudTd>
+                    <MudTd>
+                        @if (sentence.o != context.Item.Key)
+                        {
+                            <MudButton StartIcon="@Icons.Material.Filled.Explore" OnClick="() => AddSentences(context.Item.Value, sentence.o)"></MudButton>
+                        }
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </ChildRowContent>
+    </MudDataGrid>
 </MudDrawerContainer>
 
 @code {
@@ -170,7 +186,9 @@
 
     private string DisplaySentenceObject(NodeIdentifier v)
     {
+        bool isNoun = v.NameSpace == "http://ddhub.no/";
         if (v == null) { return "_"; }
+
         string ns = v.NameSpace;
         if (ns.StartsWith(QueryBuilder.DDHUBPREFIX))
         { ns = ns.Remove(0, QueryBuilder.DDHUBPREFIX.Length); }
@@ -182,6 +200,8 @@
         {
             ns = ns.Remove(0, "http://ddhub.no/".Length);
         }
+
+
         string id = v.ID;
         if (id.StartsWith(QueryBuilder.DDHUBPREFIX))
         {
@@ -191,7 +211,7 @@
         {
             id = id.Remove(0, "http://ddhub.no/".Length);
         }
-        return ns + id;
+        return isNoun ? "<b style=\" color:red \">" + ns + id + "</b>" : ns + id;
     }
 
     private void UpdateProviders(string searchValue)
@@ -214,6 +234,7 @@
         }
         else return nodeIdentifier.ID;
     }
+
     private string DisplayVariableString(NodeIdentifier nodeIdentifier)
     {
         return  nodeIdentifier.ID;
@@ -248,4 +269,8 @@
         return data;
     }
 
+    private void AddSentences(MonitorData monitoredData, NodeIdentifier identifier)
+    {
+        monitoredData.Sentences.AddRange(BBExplorer.GetGeneralSentences(identifier));
+    }
 }
