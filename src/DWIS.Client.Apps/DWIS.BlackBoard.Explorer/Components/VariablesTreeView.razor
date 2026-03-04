@@ -29,45 +29,62 @@
             }
         </MudTreeView>
     </MudDrawer>
-        <MudPaper  Outlined="false">
-           
+
+        <div style="display: inline-flex;">
         <MudText Style="margin-left:8px" Typo="Typo.h5"> Variables</MudText>
-        <MudSwitch @bind-Value="@_drawerOpen" Label="@(_drawerOpen ? "Hide providers" : "Show providers")" Color="@(_drawerOpen? Color.Success: Color.Warning)"></MudSwitch>
-      
-            <MudTable Bordered  Items="_monitorData" Style="width:100%; margin-left:10px; margin-right:10px; margin-top:5px" >
-                <HeaderContent>
-                    <MudTh Style="font-weight: bold;">Variable</MudTh>
-                    <MudTh Style="font-weight: bold;">Value</MudTh>
-                    <MudTh Style="font-weight: bold;">Sentences</MudTh>
-                    <MudTh Style="font-weight: bold;">Remove</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd Style="font-style:italic; color:darkcyan">@DisplayVariableString(context.Key)</MudTd>
-                    <MudTd Style="color:darkblue">@context.Value.Value</MudTd>
-                    <MudTd>
-                    <MudExpansionPanel Text="@((context.Value.Sentences != null ? context.Value.FilteredSentences.Count.ToString() : "0") + " sentence(s)")">
-                        <MudTable Bordered Context="sentence" Items="context.Value.FilteredSentences">
-                                <HeaderContent>
-                                    <MudTh Style="font-weight: bold;">Verb</MudTh>
-                                    <MudTh Style="font-weight: bold;">Object</MudTh>
-                                </HeaderContent>
-                                <RowTemplate >
-                                    <MudTd>
-                                       @DisplaySentenceVerb(sentence.v)
-                                    </MudTd>
-                                    <MudTd>
-                                        @DisplaySentenceObject(sentence.o)
-                                    </MudTd>
-                                </RowTemplate>
-                            </MudTable>
-                        </MudExpansionPanel>
-                    </MudTd>
-                    <MudTd>
-                        <MudIconButton Color="Color.Error" Icon="@Icons.Material.Filled.Delete" OnClick="@(() => FocusItems = FocusItems.Where(item => item != context.Key).ToList())" />                       
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
-        </MudPaper>
+            <MudSwitch @bind-Value="@_drawerOpen" Label="@(_drawerOpen ? "Hide providers" : "Show providers")" Color="@(_drawerOpen? Color.Success: Color.Warning)"></MudSwitch>
+        </div>
+             
+        
+            <MudDataGrid Style="width:1500px" FixedHeader Items="_monitorData" T="KeyValuePair<NodeIdentifier, MonitorData>" HorizontalScrollbar="true" Bordered="true" Dense="true">
+                <Columns>
+                    <HierarchyColumn HeaderStyle="width:50px;"></HierarchyColumn>
+                    <PropertyColumn HeaderStyle="font-weight: bold; width:700px;"
+                     @*    Style="width:40%"   *@
+                        Property="x => DisplayVariableString(x.Key)" 
+                        Title="Variable">
+                    </PropertyColumn>
+
+                    <PropertyColumn      HeaderStyle="font-weight: bold; width:650px;"
+                      @*   Style="width:40%" 
+                        CellStyle="color: darkblue;"  *@
+                        Property="x => x.Value.Value" 
+                        Title="Value">
+                    </PropertyColumn>
+
+                    <TemplateColumn HeaderStyle="font-weight: bold;width:100px; "
+                        T="KeyValuePair<NodeIdentifier, MonitorData>" 
+                       @*  Style="width:10%"  *@
+                       
+                        Title="Remove">
+
+                        <CellTemplate>
+                            <MudIconButton 
+                                Color="Color.Error" 
+                                Icon="@Icons.Material.Filled.Delete" 
+                                OnClick="@(() => FocusItems = FocusItems.Where(item => item != context.Item.Key).ToList())" />
+                        </CellTemplate>
+
+                    </TemplateColumn>
+                </Columns>
+                <ChildRowContent>
+                    <MudTable Style="width:100%" Bordered Context="sentence" Items="context.Item.Value.FilteredSentences">
+                        <HeaderContent>
+                            <MudTh Style="font-weight: bold;">Verb</MudTh>
+                            <MudTh Style="font-weight: bold;">Object</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>
+                                @DisplaySentenceVerb(sentence.v)
+                            </MudTd>
+                            <MudTd>
+                                @DisplaySentenceObject(sentence.o)
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </ChildRowContent>
+            </MudDataGrid>
+ 
 
 
 </MudDrawerContainer>
