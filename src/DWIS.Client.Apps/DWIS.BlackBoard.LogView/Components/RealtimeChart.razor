@@ -212,7 +212,8 @@
                                             X = new List<object>(),
                                             Y = new List<object>(),
                                             Mode = Plotly.Blazor.Traces.ScatterLib.ModeFlag.Lines,
-                                            XAxis = _axisLookUp[chartData.AxisName],                                           
+                                            XAxis = _axisLookUp[chartData.AxisName],       
+                                            HoverInfo = Plotly.Blazor.Traces.ScatterLib.HoverInfoFlag.X | Plotly.Blazor.Traces.ScatterLib.HoverInfoFlag.Name                           
                                         };
                                     _series.Add(trace);
                                     traceIdx = _series.Count - 1;
