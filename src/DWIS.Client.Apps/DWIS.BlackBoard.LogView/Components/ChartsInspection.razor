@@ -15,9 +15,13 @@
         <MudTd>
             @foreach(var row in context.queryResult.Results)
             {
+                <div style="display: inline-flex;">
                 <div>@row.Items.First().ToString()</div>
+                    <MudCheckBox T="bool" Value="@GetInitialValue(row.Items.First())" ValueChanged="(v) => IncludeChanged(row.Items.First(), v)"></MudCheckBox>
+                </div>
             }
         </MudTd>
+
     </RowTemplate>
 </MudTable>
 
@@ -52,5 +56,25 @@
             }
         }
         return base.OnParametersSetAsync();
+    }
+
+
+    private void IncludeChanged(NodeIdentifier item, bool include)
+    {
+        var excludedItem = Control.ExludedCharts.FirstOrDefault(ni => ni.NameSpace == item.NameSpace && ni.ID == item.ID);
+        if (include && excludedItem != null)
+        {
+            Control.ExludedCharts.Remove(excludedItem);
+        }
+        else if (!include && excludedItem == null)
+        {
+            Control.ExludedCharts.Add(item);
+        }
+    }
+
+    private bool GetInitialValue(NodeIdentifier item)
+    {
+        var excludedItem = Control.ExludedCharts.FirstOrDefault(ni => ni.NameSpace == item.NameSpace && ni.ID == item.ID);
+        return excludedItem == null;
     }
 }

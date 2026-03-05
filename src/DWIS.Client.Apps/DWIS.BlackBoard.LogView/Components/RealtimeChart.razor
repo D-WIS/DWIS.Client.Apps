@@ -201,23 +201,27 @@
 
                             int traceIdx = _data.ContainsKey(text) ? _data[text] : -1;
                             if (traceIdx == -1)                            
-                            {
-                                ChartData? chartData = GetChartDataFromKey(key);
-                                if (chartData != null)
+                            {  
+                                if (DWISClient.GetNameSpace(nodeid.NameSpaceIndex, out string nameSpace))
                                 {
-                                    traceAdded = true;
-                                    ITrace trace = new Scatter()
-                                        {Legend = _legendLookUp[chartData.AxisName],
-                                            Name = text, 
-                                            X = new List<object>(),
-                                            Y = new List<object>(),
-                                            Mode = Plotly.Blazor.Traces.ScatterLib.ModeFlag.Lines,
-                                            XAxis = _axisLookUp[chartData.AxisName],       
-                                            HoverInfo = Plotly.Blazor.Traces.ScatterLib.HoverInfoFlag.X | Plotly.Blazor.Traces.ScatterLib.HoverInfoFlag.Name                           
-                                        };
-                                    _series.Add(trace);
-                                    traceIdx = _series.Count - 1;
-                                    _data.TryAdd(text, traceIdx);
+                                    ChartData? chartData = GetChartDataFromKey(key);
+                                    if (chartData != null)
+                                    {
+                                        traceAdded = true;
+                                        ITrace trace = new Scatter()
+                                            { Legend = _legendLookUp[chartData.AxisName],
+                                                Name = text, 
+                                                Meta = new DWIS.API.DTO.NodeIdentifier() { NameSpace = nameSpace, ID = nodeid.ID },
+                                                X = new List<object>(),
+                                                Y = new List<object>(),
+                                                Mode = Plotly.Blazor.Traces.ScatterLib.ModeFlag.Lines,
+                                                XAxis = _axisLookUp[chartData.AxisName],
+                                                HoverInfo = Plotly.Blazor.Traces.ScatterLib.HoverInfoFlag.X | Plotly.Blazor.Traces.ScatterLib.HoverInfoFlag.Name
+                                            };
+                                        _series.Add(trace);
+                                        traceIdx = _series.Count - 1;
+                                        _data.TryAdd(text, traceIdx);
+                                    } 
                                 }
                             }
 
@@ -231,6 +235,29 @@
 
             try
             {
+
+                foreach (var series in _series)
+                {
+                    if (series != null && series is Scatter scatter)
+                    {
+                        if (scatter.Meta != null && scatter.Meta is DWIS.API.DTO.NodeIdentifier nodeIdentifier)
+                        {
+                            if (Control.ExludedCharts.FirstOrDefault(ni => ni.NameSpace == nodeIdentifier.NameSpace && ni.ID == nodeIdentifier.ID) != null)
+                            {
+                                scatter.Visible = Plotly.Blazor.Traces.ScatterLib.VisibleEnum.False;
+                            }
+                            else
+                            {
+                                scatter.Visible = Plotly.Blazor.Traces.ScatterLib.VisibleEnum.True;
+                            }
+                        }
+                        else
+                        {
+                            scatter.Visible = Plotly.Blazor.Traces.ScatterLib.VisibleEnum.True;
+                        }
+                    }
+                }
+
                 if (Control.Play && _chart != null)
                 {
                     int maxItems = 10000;
@@ -284,7 +311,7 @@
 
                             foreach (var iTrace in axisGroup)
                             {
-                                if (iTrace is Scatter scatter)
+                                if (iTrace is Scatter scatter && scatter.Visible == Plotly.Blazor.Traces.ScatterLib.VisibleEnum.True)
                                 {
                                     for (int i = scatter.X.Count - 1; i >= 0; i--)
                                     {
