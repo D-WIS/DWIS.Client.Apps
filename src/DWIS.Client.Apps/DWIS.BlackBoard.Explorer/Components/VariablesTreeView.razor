@@ -5,104 +5,107 @@
 @using DWIS.Vocabulary.Schemas
 
 <MudDrawerContainer Style="width:100%" Class="mud-height-full">
-    <MudDrawer @bind-Open="_drawerOpen" Variant="@DrawerVariant.Persistent" Fixed Width="700px">
+    <MudDrawer @bind-Open="_drawerOpen" Variant="@DrawerVariant.Persistent" Fixed Width="320px" Elevation="1" Style="border-right: 1px solid var(--mud-palette-lines-default);">
 
-        <div style="margin-left:8px;">
-            <MudText Style="margin-left:8px" Typo="Typo.h5"> Providers</MudText>
+        <div style="padding:16px 16px 4px 16px;">
+            <MudText Typo="Typo.h6" Style="font-weight:600;">Providers</MudText>
         </div>
-        <div style="margin-left:8px; margin-top:5px;">
-            <MudTextField @bind-Value="_searchString" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable DebounceInterval="500" OnDebounceIntervalElapsed="UpdateProviders"></MudTextField>
+        <div style="padding:0 16px 12px 16px;">
+            <MudTextField @bind-Value="_searchString" Placeholder="Search providers or variables" Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable DebounceInterval="500" OnDebounceIntervalElapsed="UpdateProviders"></MudTextField>
         </div>
 
-        <MudTreeView Dense T="NodeIdentifier" SelectionMode="@SelectionMode.MultiSelection" @bind-SelectedValues="FocusItems" AutoSelectParent="false" Hover>
+        <MudTreeView Dense T="NodeIdentifier" SelectionMode="@SelectionMode.MultiSelection" @bind-SelectedValues="FocusItems" AutoSelectParent="false" Hover Style="padding:0 4px;">
             @foreach (var provider in Providers)
             {
-                <MudTreeViewItem Style=" font-weight:500; font-size:small"  Text="@DisplayProviderString(provider)" Context="variables" Value="@provider" >
+                <MudTreeViewItem Style="font-weight:500; font-size:small" Text="@DisplayProviderString(provider)" Context="variables" Value="@provider">
                         @foreach (var variable in BBExplorer.GetSignalsForProvider(provider))
                         {
-                            <MudTreeViewItem   Style=" font-weight:300; font-size:small" Text="@DisplayVariableString(variable)" Value="@variable">
-                  
+                            <MudTreeViewItem Style="font-weight:300; font-size:small" Text="@DisplayVariableString(variable)" Value="@variable">
+
                             </MudTreeViewItem>
                         }
-           
+
                 </MudTreeViewItem>
             }
         </MudTreeView>
     </MudDrawer>
 
-    <div style="display: inline-flex;">
-        <MudText Style="margin-left:8px" Typo="Typo.h5"> Variables</MudText>
-        <MudSwitch @bind-Value="@_drawerOpen" Label="@(_drawerOpen ? "Hide providers" : "Show providers")" Color="@(_drawerOpen? Color.Success: Color.Warning)"></MudSwitch>
+    <div style="padding:20px 24px; width:100%;">
+
+        <div style="display:flex; align-items:center; margin-bottom:16px;">
+            <MudIcon Icon="@Icons.Material.Filled.Timeline" Color="Color.Primary" Style="margin-right:8px;" />
+            <MudText Typo="Typo.h5" Style="font-weight:600;">Variables</MudText>
+            <MudSpacer />
+            <MudSwitch @bind-Value="@_drawerOpen" Label="@(_drawerOpen ? "Hide providers" : "Show providers")" Color="@(_drawerOpen ? Color.Success : Color.Warning)"></MudSwitch>
+        </div>
+
+        <MudPaper Elevation="2" Style="border-radius:12px; overflow:hidden; width:100%;">
+            <MudDataGrid Style="width:100%;" FixedHeader Items="_monitorData" T="KeyValuePair<NodeIdentifier, MonitorData>" HorizontalScrollbar="true" Bordered="false" Dense="true" Striped="true" Hover="true">
+                <Columns>
+                    <HierarchyColumn HeaderStyle="width:50px;"></HierarchyColumn>
+                    <PropertyColumn HeaderStyle="font-weight: bold;"
+                        Property="x => DisplayVariableString(x.Key)"
+                        Title="Variable">
+                    </PropertyColumn>
+
+                    <PropertyColumn HeaderStyle="font-weight: bold;"
+                        CellStyle="color: var(--mud-palette-primary); font-weight:500;"
+                        Property="x => x.Value.Value"
+                        Title="Value">
+                    </PropertyColumn>
+
+                    <TemplateColumn HeaderStyle="font-weight: bold; width:100px;"
+                        T="KeyValuePair<NodeIdentifier, MonitorData>"
+                        Title="Remove">
+
+                        <CellTemplate>
+                            <MudIconButton
+                                Color="Color.Error"
+                                Size="Size.Small"
+                                Icon="@Icons.Material.Filled.Delete"
+                                OnClick="@(() => FocusItems = FocusItems.Where(item => item != context.Item.Key).ToList())" />
+                        </CellTemplate>
+
+                    </TemplateColumn>
+                </Columns>
+                <ChildRowContent>
+                    <MudTable Style="width:100%" Elevation="0" Bordered Dense Context="sentence" Items="context.Item.Value.FilteredSentences">
+                        <HeaderContent>
+                            <MudTh Style="font-weight: bold;">Inspect</MudTh>
+                            <MudTh Style="font-weight: bold;">Subject</MudTh>
+
+                            <MudTh Style="font-weight: bold;">Verb</MudTh>
+                            <MudTh Style="font-weight: bold;">Object</MudTh>
+                            <MudTh Style="font-weight: bold;">Inspect</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>
+                                @if (sentence.s != context.Item.Key)
+                                {
+                                    <MudIconButton Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Explore" OnClick="() => AddSentences(context.Item.Value, sentence.s)"></MudIconButton>
+                                }
+                            </MudTd>
+                            <MudTd>
+                                 @((MarkupString)DisplaySentenceObject(sentence.s))
+                            </MudTd>
+                            <MudTd>
+                                @DisplaySentenceVerb(sentence.v)
+                            </MudTd>
+                            <MudTd>
+                                 @((MarkupString)DisplaySentenceObject(sentence.o))
+                            </MudTd>
+                            <MudTd>
+                                @if (sentence.o != context.Item.Key)
+                                {
+                                    <MudIconButton Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Explore" OnClick="() => AddSentences(context.Item.Value, sentence.o)"></MudIconButton>
+                                }
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </ChildRowContent>
+            </MudDataGrid>
+        </MudPaper>
     </div>
-             
-        
-    <MudDataGrid Style="width:1500px" FixedHeader Items="_monitorData" T="KeyValuePair<NodeIdentifier, MonitorData>" HorizontalScrollbar="true" Bordered="true" Dense="true">
-        <Columns>
-            <HierarchyColumn HeaderStyle="width:50px;"></HierarchyColumn>
-            <PropertyColumn HeaderStyle="font-weight: bold; width:700px;"
-                @*    Style="width:40%"   *@
-                Property="x => DisplayVariableString(x.Key)" 
-                Title="Variable">
-            </PropertyColumn>
-
-            <PropertyColumn      HeaderStyle="font-weight: bold; width:650px;"
-               
-                CellStyle="color: darkblue;" 
-                Property="x => x.Value.Value" 
-                Title="Value">
-            </PropertyColumn>
-
-            <TemplateColumn HeaderStyle="font-weight: bold;width:100px; "
-                T="KeyValuePair<NodeIdentifier, MonitorData>" 
-                @*  Style="width:10%"  *@
-                       
-                Title="Remove">
-
-                <CellTemplate>
-                    <MudIconButton 
-                        Color="Color.Error" 
-                        Icon="@Icons.Material.Filled.Delete" 
-                        OnClick="@(() => FocusItems = FocusItems.Where(item => item != context.Item.Key).ToList())" />
-                </CellTemplate>
-
-            </TemplateColumn>
-        </Columns>
-        <ChildRowContent>
-            <MudTable Style="width:100%" Bordered Context="sentence" Items="context.Item.Value.FilteredSentences">
-                <HeaderContent>
-                    <MudTh Style="font-weight: bold;">Inspect</MudTh>
-                    <MudTh Style="font-weight: bold;">Subject</MudTh>
-
-                    <MudTh Style="font-weight: bold;">Verb</MudTh>
-                    <MudTh Style="font-weight: bold;">Object</MudTh>
-                    <MudTh Style="font-weight: bold;">Inspect</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd>
-                        @if (sentence.s != context.Item.Key)
-                        {
-                            <MudButton StartIcon="@Icons.Material.Filled.Explore" OnClick="() => AddSentences(context.Item.Value, sentence.s)"></MudButton>
-                        }
-                    </MudTd>
-                    <MudTd>
-                         @((MarkupString)DisplaySentenceObject(sentence.s))
-                    </MudTd>
-                    <MudTd>
-                        @DisplaySentenceVerb(sentence.v)
-                    </MudTd>
-                    <MudTd>
-                         @((MarkupString)DisplaySentenceObject(sentence.o))
-                    </MudTd>
-                    <MudTd>
-                        @if (sentence.o != context.Item.Key)
-                        {
-                            <MudButton StartIcon="@Icons.Material.Filled.Explore" OnClick="() => AddSentences(context.Item.Value, sentence.o)"></MudButton>
-                        }
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
-        </ChildRowContent>
-    </MudDataGrid>
 </MudDrawerContainer>
 
 @code {

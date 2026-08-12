@@ -101,8 +101,12 @@
         _layout.Margin.R = 0;
         _layout.Margin.B = 4;
 
+        _layout.PaperBgColor = "rgba(0,0,0,0)";
+        _layout.PlotBgColor = "rgba(0,0,0,0)";
+        _layout.Font = new Plotly.Blazor.LayoutLib.Font() { Family = "Roboto, Helvetica, Arial, sans-serif", Color = "#3a4353" };
+
         _layout.Shapes = new List<Plotly.Blazor.LayoutLib.Shape>();
-        _layout.Shapes.Add(new Plotly.Blazor.LayoutLib.Shape() { Type = Plotly.Blazor.LayoutLib.ShapeLib.TypeEnum.Rect, X0 = 0, X1 = 1, Y0= 0, Y1 = 1, XRef = "paper", YRef = "paper", Line = new Plotly.Blazor.LayoutLib.ShapeLib.Line() { Width = 1, Color = "black" } });
+        _layout.Shapes.Add(new Plotly.Blazor.LayoutLib.Shape() { Type = Plotly.Blazor.LayoutLib.ShapeLib.TypeEnum.Rect, X0 = 0, X1 = 1, Y0= 0, Y1 = 1, XRef = "paper", YRef = "paper", Line = new Plotly.Blazor.LayoutLib.ShapeLib.Line() { Width = 1, Color = "#c7cddb" } });
 
         _layout.YAxis = [new Plotly.Blazor.LayoutLib.YAxis()
             {
@@ -129,7 +133,7 @@
                         Title = new Plotly.Blazor.LayoutLib.XAxisLib.Title() 
                         {
                             Text = ad.Label,
-                         Font = new Plotly.Blazor.LayoutLib.XAxisLib.TitleLib.Font() { Color = "red",Weight = 800 }
+                         Font = new Plotly.Blazor.LayoutLib.XAxisLib.TitleLib.Font() { Color = "#052767",Weight = 700 }
                         },
                         Visible = true,
                         Side = Plotly.Blazor.LayoutLib.XAxisLib.SideEnum.Top,

@@ -1,7 +1,7 @@
 ﻿@inherits LayoutComponentBase
 @inject AppControl Control
 @* Required *@
-<MudThemeProvider />
+<MudThemeProvider Theme="_theme" />
 <MudPopoverProvider />
 
 @* Needed for dialogs *@
@@ -10,48 +10,77 @@
 @* Needed for snackbars *@
 <MudSnackbarProvider />
 
-<MudLayout >
+<MudLayout>
 
-    <MudAppBar Fixed="true" Style="background-color:white; color:black; " >
-        <MudImage Src="img/NORCE_Logo_Skjerm_Blaa.png" Height="30" Style="margin-top:5px"></MudImage>
+    <MudAppBar Fixed="true" Class="logview-appbar" Elevation="0">
+        <MudImage Src="img/NORCE_Logo_Skjerm_Blaa.png" Height="30" Class="logview-logo"></MudImage>
 
-        <MudSpacer />
-        
-        <MudButton IconColor="@(Control.Play ? Color.Error : Color.Success)" IconSize="Size.Large" StartIcon="@(Control.Play ? Icons.Material.Filled.PauseCircle : Icons.Material.Filled.PlayCircle)" OnClick="()=>Control.Play = !Control.Play"/>
-        
-        @* <MudSpacer/>
-        
-        <MudText Typo="@Typo.h4">
-            Drilling Logs
-        </MudText> *@
+        <MudText Typo="Typo.h6" Class="logview-title">
+            DWIS Blackboard <span class="logview-title-accent">Drilling Logs</span>
+        </MudText>
 
         <MudSpacer />
 
-        <MudRadioGroup @bind-Value="Control.DisplaySpan">
-            <MudRadio Value="@(TimeSpan.FromMinutes(1))">1 min.</MudRadio>
-            <MudRadio Value="@(TimeSpan.FromMinutes(5))">5 min.</MudRadio>
-            <MudRadio Value="@(TimeSpan.FromMinutes(10))">10 min.</MudRadio>
-            <MudRadio Value="@(TimeSpan.FromMinutes(30))">30 min.</MudRadio>
-            <MudRadio Value="@(TimeSpan.FromMinutes(60))">1 h.</MudRadio>
-            <MudRadio Value="@(TimeSpan.FromMinutes(180))">3 h.</MudRadio>
-            <MudRadio Value="@(TimeSpan.FromMinutes(600))">10 h.</MudRadio>
-            <MudRadio Value="@(TimeSpan.MaxValue)">All</MudRadio>
+        <MudTooltip Text="@(Control.Play ? "Pause" : "Play")">
+            <MudIconButton Icon="@(Control.Play ? Icons.Material.Filled.PauseCircle : Icons.Material.Filled.PlayCircle)"
+                            Color="@(Control.Play ? Color.Error : Color.Success)"
+                            Size="Size.Large"
+                            Class="logview-play-btn"
+                            OnClick="()=>Control.Play = !Control.Play"/>
+        </MudTooltip>
+
+        <MudSpacer />
+
+        <MudRadioGroup @bind-Value="Control.DisplaySpan" Class="logview-timespan">
+            <MudRadio Value="@(TimeSpan.FromMinutes(1))" Class="logview-timespan-item">1 min.</MudRadio>
+            <MudRadio Value="@(TimeSpan.FromMinutes(5))" Class="logview-timespan-item">5 min.</MudRadio>
+            <MudRadio Value="@(TimeSpan.FromMinutes(10))" Class="logview-timespan-item">10 min.</MudRadio>
+            <MudRadio Value="@(TimeSpan.FromMinutes(30))" Class="logview-timespan-item">30 min.</MudRadio>
+            <MudRadio Value="@(TimeSpan.FromMinutes(60))" Class="logview-timespan-item">1 h.</MudRadio>
+            <MudRadio Value="@(TimeSpan.FromMinutes(180))" Class="logview-timespan-item">3 h.</MudRadio>
+            <MudRadio Value="@(TimeSpan.FromMinutes(600))" Class="logview-timespan-item">10 h.</MudRadio>
+            <MudRadio Value="@(TimeSpan.MaxValue)" Class="logview-timespan-item">All</MudRadio>
         </MudRadioGroup>
 
         <MudSpacer />
-        <MudLink Href="https://github.com/D-WIS/DWIS.Client.Apps">Source</MudLink>
+        <MudLink Href="https://github.com/D-WIS/DWIS.Client.Apps" Class="logview-source-link" Underline="Underline.None">
+            <MudIcon Icon="@Icons.Custom.Brands.GitHub" Size="Size.Small" Class="mr-1" />Source
+        </MudLink>
 
 
 @*         <MudButton StartIcon="@(Control.FullScreen? Icons.Material.Filled.FullscreenExit : Icons.Material.Filled.Fullscreen)" OnClick="async () => {Control.FullScreen = !Control.FullScreen;await InvokeAsync(StateHasChanged);}" /> *@
 
     </MudAppBar>
 
-    <MudMainContent Style="height:100vh">
+    <MudMainContent Class="logview-main" Style="height:100vh">
         @Body
     </MudMainContent>
 </MudLayout>
 
 @code{
+    private readonly MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight()
+        {
+            Primary = "#052767",
+            Secondary = "#3a0647",
+            AppbarBackground = "#052767",
+            Background = "#f2f4f8",
+            Surface = "#ffffff",
+            TextPrimary = "#1c2333",
+            TextSecondary = "#5a6270",
+        },
+        LayoutProperties = new LayoutProperties()
+        {
+            DefaultBorderRadius = "10px",
+            AppbarHeight = "56px",
+        },
+        Typography = new Typography()
+        {
+            Default = new DefaultTypography() { FontFamily = ["Roboto", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"] }
+        }
+    };
+
     protected override Task OnInitializedAsync()
     {
         base.OnInitializedAsync();

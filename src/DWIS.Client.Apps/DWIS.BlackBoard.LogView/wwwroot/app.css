@@ -2,6 +2,80 @@ html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
+/* DWIS Blackboard LogView - app bar branding */
+.logview-appbar {
+    background: linear-gradient(90deg, #052767 0%, #3a0647 100%) !important;
+    color: white !important;
+    gap: 8px;
+    overflow-x: auto;
+}
+
+.logview-logo {
+    background: white;
+    border-radius: 6px;
+    padding: 3px 8px;
+    flex: 0 0 auto;
+}
+
+.logview-title {
+    margin-left: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: 0 1 auto;
+    color: white !important;
+}
+
+.logview-play-btn {
+    background-color: rgba(255, 255, 255, 0.08);
+    flex: 0 0 auto;
+}
+
+.logview-timespan {
+    flex: 0 0 auto;
+}
+
+.logview-timespan .mud-radio-content {
+    color: white;
+    opacity: 0.75;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    padding: 2px 6px;
+    border-radius: 6px;
+    transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+.logview-timespan-item .mud-checkbox-input.mud-icon-button {
+    color: white !important;
+}
+
+.logview-timespan-item.mud-checked .mud-radio-content {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.14);
+}
+
+.logview-timespan-item:hover .mud-radio-content {
+    opacity: 1;
+}
+
+.logview-source-link {
+    color: white !important;
+    opacity: 0.85;
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+}
+
+.logview-source-link:hover {
+    opacity: 1;
+}
+
+.logview-main {
+    background-color: #f2f4f8;
+}
+
 a, .btn-link {
     color: #006bb7;
 }

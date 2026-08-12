@@ -1,65 +1,82 @@
 ﻿@inject IOPCUADWISClient DWISClient
+@inject ISnackbar Snackbar
 @using DWIS.Vocabulary.Development
 @using DWIS.Vocabulary.Schemas
 @using DWIS.SPARQL.Utils
 
 
-<MudGrid>
-    <MudItem xs="5">
-        @if (_categories != null)        {
-            <MudText Typo="Typo.h5">Quick query design </MudText>
-
-            <MudExpansionPanels>
-                @for (int i = 0; i < _categories.Count; i++)
+<div style="padding:20px 24px; width:100%;">
+    <MudGrid Spacing="4">
+        <MudItem xs="12" md="5">
+            <MudPaper Elevation="2" Style="border-radius:12px; padding:16px; height:100%;">
+                <div style="display:flex; align-items:center; margin-bottom:12px;">
+                    <MudIcon Icon="@Icons.Material.Filled.Tune" Color="Color.Primary" Style="margin-right:8px;" />
+                    <MudText Typo="Typo.h6" Style="font-weight:600;">Quick query design</MudText>
+                </div>
+                @if (_categories != null)
                 {
-                    int idx = i;
-                    <MudExpansionPanel Class="h4" Expanded Text="@(_categories[idx].category + " :" + (string.IsNullOrEmpty(_selectedCategories[idx]) ? "None" : _selectedCategories[idx]))">
-                            <MudChipSet T="string" CheckMark="true" SelectedColor="Color.Success" SelectedValueChanged="(s) =>  SelectionChanged(s,idx)"  SelectionMode="SelectionMode.ToggleSelection">
-                                @foreach (var category in _categories[idx].nouns)
-                                {
-                                    <MudChip Value="category"></MudChip>    
-                                }
-                            </MudChipSet>
-                    </MudExpansionPanel>
+                    <MudExpansionPanels Elevation="0">
+                        @for (int i = 0; i < _categories.Count; i++)
+                        {
+                            int idx = i;
+                            <MudExpansionPanel Class="h4" Expanded Text="@(_categories[idx].category + " :" + (string.IsNullOrEmpty(_selectedCategories[idx]) ? "None" : _selectedCategories[idx]))">
+                                <MudChipSet T="string" CheckMark="true" SelectedColor="Color.Success" SelectedValueChanged="(s) => SelectionChanged(s, idx)" SelectionMode="SelectionMode.ToggleSelection">
+                                    @foreach (var category in _categories[idx].nouns)
+                                    {
+                                        <MudChip Value="category"></MudChip>
+                                    }
+                                </MudChipSet>
+                            </MudExpansionPanel>
+                        }
+                    </MudExpansionPanels>
                 }
-            </MudExpansionPanels>
-        }
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="7">
+            <MudPaper Elevation="2" Style="border-radius:12px; padding:16px;">
+                <div style="display:flex; align-items:center; margin-bottom:12px;">
+                    <MudIcon Icon="@Icons.Material.Filled.Code" Color="Color.Primary" Style="margin-right:8px;" />
+                    <MudText Typo="Typo.h6" Style="font-weight:600;">SPARQL</MudText>
+                </div>
 
-    </MudItem>
-    <MudItem xs ="7">
-        <MudText Typo="Typo.h5">SparQL </MudText>
+                <div style="border-radius:8px; overflow:hidden; border:1px solid var(--mud-palette-lines-default);">
+                    <StandaloneCodeEditor CssClass="my-editor-class" @ref=_editor ConstructionOptions="EditorConstructionOptions" />
+                </div>
 
-        <MudGrid>
-    <MudItem xs="12">
-        <StandaloneCodeEditor   CssClass="my-editor-class"  @ref=_editor ConstructionOptions="EditorConstructionOptions" />
-    </MudItem>
-    <MudItem xs="12">
-        <MudButton Variant=" Variant.Outlined" StartIcon="@Icons.Material.Filled.Search" IconColor="Color.Secondary" OnClick="ResolveQuery">
-            Resolve query
-        </MudButton>
+                <div style="margin-top:16px; display:flex; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Search" OnClick="ResolveQuery">
+                        Resolve query
+                    </MudButton>
+                    <MudBadge Content="_registeredQueryCount" Color="Color.Secondary" Overlap="true" Visible="_registeredQueryCount > 0">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.AppRegistration" OnClick="RegisterQuery">
+                            Register query
+                        </MudButton>
+                    </MudBadge>
+                </div>
 
-        @if (_queryResult != null && _queryResult.VariablesHeader != null && _queryResult.VariablesHeader.Count > 0)
-        {
-        <MudTable Bordered Items="_queryResult.Results">
-            <HeaderContent>
-                    @foreach (var header in _queryResult.VariablesHeader)
-                    {
-                                <MudTh Style="font-weight: bold;">@header</MudTh>
-                    }
-            </HeaderContent>
-            <RowTemplate>
-                    @foreach (var item in context.Items)
-                    {
-                        <MudTd>@item.ToString()</MudTd>
-                    }
-                </RowTemplate>
-        </MudTable>    
-        }
-
-            </MudItem>
-        </MudGrid>
-    </MudItem>
-</MudGrid>
+                @if (_queryResult != null && _queryResult.VariablesHeader != null && _queryResult.VariablesHeader.Count > 0)
+                {
+                    <MudPaper Elevation="0" Style="margin-top:16px; border-radius:8px; overflow:hidden; border:1px solid var(--mud-palette-lines-default);">
+                        <MudTable Bordered="false" Dense="true" Striped="true" Hover="true" Items="_queryResult.Results" HorizontalScrollbar>
+                            <HeaderContent>
+                                @foreach (var header in _queryResult.VariablesHeader)
+                                {
+                                    <MudTh Style="font-weight: bold;">@header</MudTh>
+                                }
+                            </HeaderContent>
+                            <RowTemplate>
+                                @foreach (var item in context.Items)
+                                {
+                                     <MudTd>@item?.ToString()</MudTd>
+                                }
+                            </RowTemplate>
+                        </MudTable>
+                    </MudPaper>
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</div>
 @code {
 
     StandaloneCodeEditor _editor;
@@ -70,13 +87,16 @@
         {
             AutomaticLayout = true,
             Language = "sparql",
-            Theme = "vs-dark",            
+            Theme = "vs-dark",
         };
     }
     private DWISVocabulary _vocabulary = DWIS.Vocabulary.Standard.VocabularyProvider.GetDWISVocabulary();
     private Tree<Noun>? _nounTree;
 
     private List<(string category, List<string> nouns)>? _categories;
+
+
+    private int _registeredQueryCount = 0;
 
     private string?[]? _selectedCategories;
 
@@ -92,7 +112,7 @@
 
     protected override Task OnInitializedAsync()
     {
-        string[] categories = [ Nouns.PrototypeData, Nouns.ProcessData, Nouns.PhysicalData];
+        string[] categories = [Nouns.PrototypeData, Nouns.ProcessData, Nouns.PhysicalData];
         _vocabulary.ToTrees(out _nounTree, out var verbTree);
         _categories = categories.Select(cat => (cat, GetChildrenNouns(cat))).ToList();
         _selectedCategories = new string[_categories.Count];
@@ -101,14 +121,35 @@
 
     private async void ResolveQuery()
     {
-        string query =await _editor.GetValue();
+        string query = await _editor.GetValue();
         if (!string.IsNullOrEmpty(query))
         {
             if (DWISClient != null)
             {
                 _queryResult = DWISClient.GetQueryResult(query);
                 await InvokeAsync(StateHasChanged);
-            }    
+            }
+        }
+    }
+
+    private async void RegisterQuery()
+    {
+        string query = await _editor.GetValue();
+        if (!string.IsNullOrEmpty(query))
+        {
+            if (DWISClient != null)
+            {
+                DWISClient.RegisterQuery(query, OnQueryDiffResult);
+                _registeredQueryCount++;
+            }
+        }
+    }
+
+    private async void OnQueryDiffResult(DWIS.API.DTO.QueryResultsDiff resultDiff)
+    {
+        if (resultDiff != null)
+        {
+            Snackbar.Add("New query result for query " + resultDiff.QueryID);
         }
     }
 
@@ -122,7 +163,7 @@
                 var nounList = nounSubTreeNode.ToList();
                 if (nounList != null)
                 {
-                    return nounList.Select(n => n.Name).ToList();    
+                    return nounList.Select(n => n.Name).ToList();
                 }
             }
         }
@@ -133,7 +174,7 @@
     {
         QueryBuilder builder = new QueryBuilder();
         builder.SelectSignal().SelectDataPoint();
-        if(_selectedCategories != null)
+        if (_selectedCategories != null)
         {
             foreach (var selection in _selectedCategories)
             {
@@ -141,7 +182,7 @@
                 {
                     string selected = selection;
                     builder.AddClasses(selected);
-                }    
+                }
             }
         }
         return builder.Build();

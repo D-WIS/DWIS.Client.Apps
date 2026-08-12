@@ -4,20 +4,19 @@
 
 <PageTitle>DWIS Blackboard explorer</PageTitle>
 
-<div style="width:100%; height:100%;margin-top:12px; margin-left:12px;margin-right:12px; display:flex" >
-
+<div class="dwis-page">
 
     @if (ShowQueryPage)
     {
-        <QueryComponent></QueryComponent>    
+        <QueryComponent></QueryComponent>
     }
     else if(ShowProviderPagePage)
     {
-        <VariablesTreeView />            
+        <VariablesTreeView />
     }
     else if(ShowVocabularyPage)
     {
-        <InstanceEdition />            
+        <InstanceEdition />
     }
 </div>
 

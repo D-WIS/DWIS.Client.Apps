@@ -1,6 +1,6 @@
 ﻿@inject AppControl Control
 
-<MudSwitch @bind-Value="ShowInspection"></MudSwitch>
+<MudSwitch @bind-Value="ShowInspection" Color="Color.Primary" Label="Show signal inspection"></MudSwitch>
 @if (ShowInspection && LogsConfiguration != null)
 {
     <MudGrid>

@@ -1,6 +1,6 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 @* Required *@
-<MudThemeProvider />
+<MudThemeProvider @bind-IsDarkMode="_isDarkMode" Theme="AppTheme.Default" />
 <MudPopoverProvider />
 
 @* Needed for dialogs *@
@@ -9,27 +9,34 @@
 @* Needed for snackbars *@
 <MudSnackbarProvider />
 
-<MudLayout >
+<MudLayout>
 
-    <MudAppBar Fixed="true" Style="background-color:white; color:black; " >
-        <MudImage Src="img/NORCE_Logo_Skjerm_Blaa.png" Height="30" Style="margin-top:5px"></MudImage>
+    <MudAppBar Fixed="true" Elevation="3" Style="background: linear-gradient(90deg, #0B3D6B 0%, #123C6B 55%, #4A0B5C 100%); color:#ffffff;">
+        <MudImage Src="img/NORCE_Logo_Skjerm_Blaa.png" Height="32" Style="margin-top:4px; background:#ffffff; border-radius:6px; padding:3px 6px;"></MudImage>
+        <MudText Typo="Typo.h5" Style="margin-left:16px; font-weight:600; letter-spacing:.3px;">Blackboard Explorer</MudText>
         <MudSpacer />
-        <MudText Typo="Typo.h3" Style="color:darkblue">Blackboard explorer</MudText>
-        <MudSpacer />
-        <MudButton StartIcon="@Icons.Material.Filled.People" OnClick="() => ProviderView =true" DropShadow="@ProviderView">Provider view</MudButton>
-        <MudButton StartIcon="@Icons.Material.Filled.LocationSearching" OnClick="() => QueryView = true" DropShadow="@QueryView">Query view</MudButton>
-        <MudButton StartIcon="@Icons.Material.Filled.MenuBook" OnClick="() => VocabularyView = true"     DropShadow="@VocabularyView">Vocabulary view</MudButton>
-       @*  <MudText Typo="Typo.h4">@(_showQueries ? "Query view" : "Provider view")</MudText>
-        <MudSpacer /> *@
-        @* < MudSwitch @bind-Value="@_showQueries" Label="Provider view / Query view"></MudSwitch>
-        @if (!_showQueries)
-        {
-            <MudSwitch @bind-Value="@_drawerOpen" Label="@(_drawerOpen ? "Hide providers" : "Show providers")" Color="@(_drawerOpen ? Color.Success : Color.Warning)" ></MudSwitch>                    
-        } 
-        *@
+
+        <MudButton StartIcon="@Icons.Material.Filled.People" OnClick="() => ProviderView = true"
+                   Variant="@(ProviderView ? Variant.Filled : Variant.Text)"
+                   Color="@(ProviderView ? Color.Secondary : Color.Inherit)"
+                   Style="margin-right:6px; border-radius:8px;">Providers</MudButton>
+
+        <MudButton StartIcon="@Icons.Material.Filled.LocationSearching" OnClick="() => QueryView = true"
+                   Variant="@(QueryView ? Variant.Filled : Variant.Text)"
+                   Color="@(QueryView ? Color.Secondary : Color.Inherit)"
+                   Style="margin-right:6px; border-radius:8px;">Query</MudButton>
+
+        <MudButton StartIcon="@Icons.Material.Filled.MenuBook" OnClick="() => VocabularyView = true"
+                   Variant="@(VocabularyView ? Variant.Filled : Variant.Text)"
+                   Color="@(VocabularyView ? Color.Secondary : Color.Inherit)"
+                   Style="margin-right:14px; border-radius:8px;">Vocabulary</MudButton>
+
+        <MudIconButton Color="Color.Inherit"
+                       Icon="@(_isDarkMode ? Icons.Material.Filled.Brightness7 : Icons.Material.Filled.Brightness4)"
+                       OnClick="@(() => _isDarkMode = !_isDarkMode)" />
     </MudAppBar>
 
-    <MudMainContent Style="height:100vh">
+    <MudMainContent Style="background-color: var(--mud-palette-background); min-height:100vh;">
         <DWIS.BlackBoard.Explorer.Components.Pages.Home ShowQueryPage="@_queryView" ShowProviderPagePage="@_providerView" ShowVocabularyPage="_vocabularyView" />
     </MudMainContent>
 
@@ -39,28 +46,29 @@
     bool _providerView = true;
     bool _queryView = false;
     bool _vocabularyView = false;
+    bool _isDarkMode = false;
 
     bool ProviderView
-    { 
+    {
         get { return _providerView; }
         set {
             _providerView = value;
             if (_providerView) { _queryView = false; _vocabularyView = false; }
-        } 
+        }
     }
     bool QueryView
-    { 
+    {
         get { return _queryView; }
         set {
             _queryView = value; if (_queryView) { _vocabularyView = false; _providerView = false; }
-        } 
+        }
     }
     bool VocabularyView
-    { 
+    {
         get { return _vocabularyView; }
         set {
             _vocabularyView = value;
             if (_vocabularyView) { _queryView = false; _providerView = false; }
-        } 
+        }
     }
 }

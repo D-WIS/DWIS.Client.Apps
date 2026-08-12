@@ -17,13 +17,16 @@ DWIS.Client.ReferenceImplementation.OPCFoundation.DWISClientOPCF client = new DW
 
 addedSemantic =
     [
-        ("openLab",[("filtering", [Nouns.LowPassFilter])])
+        ("openLAB",[("filtering", [Nouns.LowPassFilter])])
 
+    ];
+addedSemantic =
+    [
+        ("openLAB",[("HookPosition", [Nouns.DirectMeasurement])])
     ];
 
 
-
-addedSemantic = null;
+//addedSemantic = null;
 
 AddSpecifiedClasses(addedSemantic);
 
@@ -32,7 +35,7 @@ AddSpecifiedClasses(addedSemantic);
 
 //AddHoleDepthFromFilteredBitDepth("openLAB", "BitDepth", "TD");
 
-AddDownholePressuresLocationInformationManifest("BaseStarDataManifestDWIS", "BaseStarMeasuredAnnulusPressure#01", "BaseStarMeasuredStringPressure#01", "outletHydraulicBranch#01", "stringHydraulicBranch#01");
+//AddDownholePressuresLocationInformationManifest("BaseStarDataManifestDWIS", "BaseStarMeasuredAnnulusPressure#01", "BaseStarMeasuredStringPressure#01", "outletHydraulicBranch#01", "stringHydraulicBranch#01");
 
 
 

@@ -1,41 +1,46 @@
 ﻿@using DWIS.Vocabulary.Development
 
-<MudDataGrid Style="width:100%" @ref="dataGrid" Items="_searchVocabularyItems" T="VocabularyItem" SortMode="SortMode.Single" Groupable="true" GroupExpanded="false" Filterable="true" Hideable="true">
-    <ToolBarContent>
-        <MudText Typo="Typo.h6">Vocabulary</MudText>
-        <MudSpacer />
-        <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true" Clearable="true"
-        AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" OnClearButtonClick="() => updateSearch()" TextChanged="() => updateSearch()"></MudTextField>
-    </ToolBarContent>
-    <Columns>
-        <HierarchyColumn T="VocabularyItem"></HierarchyColumn>
-        <PropertyColumn Property="x => x.DisplayName" Title="Display name"></PropertyColumn>
-        <PropertyColumn Property="x => x.Name" Title="Name"></PropertyColumn>
-        <PropertyColumn Property="x => GetDescription(x)" Title="Description"></PropertyColumn>
-        <PropertyColumn Property="x => x.DefinitionSet" Title="Set" Grouping GroupBy="@_groupByNoun"></PropertyColumn>
-        <PropertyColumn Property="x => x.Parent" Title="Parent"></PropertyColumn>
-        <PropertyColumn Property="x => x.Nature" Title="Nature"></PropertyColumn>
-    </Columns>
-    <ChildRowContent>
-        @if (context.Item.IsNoun)
-        {
-            <MudCard>
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Attributes</MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent>
-                    @foreach (var att in context.Item.Attributes)
-                    {
-                        <MudText>@att.attribute  (@att.type) : @att.description  </MudText>
-                    }
+<div style="padding:20px 24px; width:100%;">
+    <MudPaper Elevation="2" Style="border-radius:12px; overflow:hidden; width:100%;">
+        <MudDataGrid Style="width:100%" @ref="dataGrid" Items="_searchVocabularyItems" T="VocabularyItem" SortMode="SortMode.Single" Groupable="true" GroupExpanded="false" Filterable="true" Hideable="true" Dense="true" Striped="true" Hover="true">
+            <ToolBarContent>
+                <MudIcon Icon="@Icons.Material.Filled.MenuBook" Color="Color.Primary" Style="margin-right:8px;" />
+                <MudText Typo="Typo.h6" Style="font-weight:600;">Vocabulary</MudText>
+                <MudSpacer />
+                <MudTextField @bind-Value="_searchString" Placeholder="Search" Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.Start" Immediate="true" Clearable="true"
+                AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" OnClearButtonClick="() => updateSearch()" TextChanged="() => updateSearch()"></MudTextField>
+            </ToolBarContent>
+            <Columns>
+                <HierarchyColumn T="VocabularyItem"></HierarchyColumn>
+                <PropertyColumn Property="x => x.DisplayName" Title="Display name"></PropertyColumn>
+                <PropertyColumn Property="x => x.Name" Title="Name"></PropertyColumn>
+                <PropertyColumn Property="x => GetDescription(x)" Title="Description"></PropertyColumn>
+                <PropertyColumn Property="x => x.DefinitionSet" Title="Set" Grouping GroupBy="@_groupByNoun"></PropertyColumn>
+                <PropertyColumn Property="x => x.Parent" Title="Parent"></PropertyColumn>
+                <PropertyColumn Property="x => x.Nature" Title="Nature"></PropertyColumn>
+            </Columns>
+            <ChildRowContent>
+                @if (context.Item.IsNoun)
+                {
+                    <MudCard Elevation="0" Style="background: var(--mud-palette-background-gray); margin:8px; border-radius:8px;">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">Attributes</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            @foreach (var att in context.Item.Attributes)
+                            {
+                                <MudText>@att.attribute  (@att.type) : @att.description  </MudText>
+                            }
 
-                </MudCardContent>
-            </MudCard>
-        }
-    </ChildRowContent>
-</MudDataGrid>
+                        </MudCardContent>
+                    </MudCard>
+                }
+            </ChildRowContent>
+        </MudDataGrid>
+    </MudPaper>
+</div>
 @code {
    
     public DWISVocabulary Vocabulary { get; set; } = DWIS.Vocabulary.Standard.VocabularyProvider.GetDWISVocabulary();

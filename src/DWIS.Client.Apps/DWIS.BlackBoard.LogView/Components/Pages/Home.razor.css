@@ -1,0 +1,49 @@
+.logview-shell {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 10px 14px 14px;
+    gap: 8px;
+}
+
+.logview-toolbar {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+}
+
+.logview-grid {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    gap: 12px;
+}
+
+.logview-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background: #ffffff;
+    border-radius: 10px;
+    border: 1px solid #e4e7ee;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.08);
+    overflow: hidden;
+}
+
+.logview-card-header {
+    flex: 0 0 auto;
+    padding: 6px 12px;
+    background: linear-gradient(90deg, #052767 0%, #3a0647 100%);
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.logview-card-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 4px 6px;
+}
